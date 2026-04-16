@@ -3,10 +3,12 @@
  * 集成到官方登录页右侧面板
  */
 
-// 容器
+// 容器 - 右侧固定宽度面板
 .qrcode-login-section {
   width: 100%;
-  margin-top: 12px;
+  max-width: 280px;
+  margin-top: 0;
+  margin-left: auto;
   padding: 0;
 }
 
@@ -16,18 +18,19 @@
   gap: 8px;
   width: 100%;
   margin-bottom: 12px;
+  margin-top: 0;
 }
 
 // 扫码操作按钮 - 红色背景风格
 .qrcode-action-btn {
   flex: 1;
-  padding: 10px 12px;
+  padding: 9px 10px;
   background: #e74c3c;
   border: 2px solid #e74c3c;
   color: white;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   transition: all 0.2s ease;
   outline: none;
@@ -170,7 +173,9 @@
 
 @media (max-width: 600px) {
   .qrcode-login-section {
-    margin-top: 8px;
+    max-width: 100%;
+    margin-top: 12px;
+    margin-left: 0;
   }
 
   .qrcode-buttons-row {

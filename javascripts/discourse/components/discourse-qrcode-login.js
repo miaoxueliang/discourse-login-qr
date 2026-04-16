@@ -60,8 +60,11 @@ export default class DiscourseQrcodeLoginComponent extends Component {
     this.isLoadingQrcode = true;
     this.qrcodeError = null;
 
+    const baseUrl = (settings.qrcode_api_base_url || "").replace(/\/$/, "");
+    const apiUrl = `${baseUrl}/v1/api/discourse/qrcode/url`;
+
     try {
-      const response = await ajax("/v1/api/discourse/qrcode/url", {
+      const response = await ajax(apiUrl, {
         data: { type },
       });
 
@@ -81,7 +84,13 @@ export default class DiscourseQrcodeLoginComponent extends Component {
         this.qrcodeError = response?.message || "获取二维码失败，请稍后重试";
       }
     } catch (error) {
-      this.qrcodeError = `获取二维码失败: ${error?.statusText || error?.message || "未知错误"}`;
+      // eslint-disable-next-line no-console
+      console.error("[QRCode] API error:", apiUrl, error);
+      const status = error?.jqXHR?.status || error?.status;
+      const msg = error?.jqXHR?.statusText || error?.responseText || error?.message;
+      this.qrcodeError = status
+        ? `获取二维码失败 (HTTP ${status})，请检查后端 API 是否可访问`
+        : `获取二维码失败: ${msg || "请检查 qrcode_api_base_url 设置"}` ;
     } finally {
       this.isLoadingQrcode = false;
     }

@@ -1,0 +1,3 @@
+qrcode_api_base_url:
+  default: ""
+  type: string

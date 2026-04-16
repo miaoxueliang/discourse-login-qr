@@ -1,60 +1,62 @@
-<div
-  class="qrcode-login-section"
-  {{did-insert this.setup}}
-  {{will-destroy this.teardown}}
->
-  {{!-- 两个扫码按钮，并排显示 --}}
-  <div class="qrcode-buttons-row">
-    <button
-      class="qrcode-action-btn {{if (eq this.selectedQrcodeType 'wecom') 'active'}}"
-      {{on "click" (fn this.selectQrcodeType "wecom")}}
-      title="企业微信扫码登录"
-      type="button"
-    >
-      企微扫码
-    </button>
-    <button
-      class="qrcode-action-btn {{if (eq this.selectedQrcodeType 'classin') 'active'}}"
-      {{on "click" (fn this.selectQrcodeType "classin")}}
-      title="Classin App 扫码登录"
-      type="button"
-    >
-      Classin扫码
-    </button>
-  </div>
+{{#if this.shouldRender}}
+  <div
+    class="qrcode-login-section"
+    {{did-insert this.setup}}
+    {{will-destroy this.teardown}}
+  >
+    {{!-- 两个扫码按钮，并排显示 --}}
+    <div class="qrcode-buttons-row">
+      <button
+        class="qrcode-action-btn {{if (eq this.selectedQrcodeType 'wecom') 'active'}}"
+        {{on "click" (fn this.selectQrcodeType "wecom")}}
+        title="企业微信扫码登录"
+        type="button"
+      >
+        企微扫码
+      </button>
+      <button
+        class="qrcode-action-btn {{if (eq this.selectedQrcodeType 'classin') 'active'}}"
+        {{on "click" (fn this.selectQrcodeType "classin")}}
+        title="Classin App 扫码登录"
+        type="button"
+      >
+        Classin扫码
+      </button>
+    </div>
 
-  {{!-- 加载/错误/二维码预览区 --}}
-  <div class="qrcode-preview-area">
-    {{#if this.isLoadingQrcode}}
-      <div class="qrcode-loading">
-        <div class="qrcode-spinner"></div>
-        <span>加载中...</span>
-      </div>
-    {{else if this.qrcodeError}}
-      <div class="qrcode-error-box">
-        <p class="qrcode-error-text">{{this.qrcodeError}}</p>
-        <button {{on "click" this.retryLoadQrcode}} class="qrcode-retry-btn" type="button">
-          重试
-        </button>
-      </div>
-    {{else}}
-      {{!-- 二维码显示 --}}
-      {{#if (eq this.selectedQrcodeType 'wecom')}}
-        <div class="qrcode-box-wrapper">
-          <div id="qrcode-wecom" class="qrcode-box"></div>
+    {{!-- 加载/错误/二维码预览区 --}}
+    <div class="qrcode-preview-area">
+      {{#if this.isLoadingQrcode}}
+        <div class="qrcode-loading">
+          <div class="qrcode-spinner"></div>
+          <span>加载中...</span>
         </div>
-      {{else if (eq this.selectedQrcodeType 'classin')}}
-        {{#if this.classinAvailable}}
+      {{else if this.qrcodeError}}
+        <div class="qrcode-error-box">
+          <p class="qrcode-error-text">{{this.qrcodeError}}</p>
+          <button {{on "click" this.retryLoadQrcode}} class="qrcode-retry-btn" type="button">
+            重试
+          </button>
+        </div>
+      {{else}}
+        {{!-- 二维码显示 --}}
+        {{#if (eq this.selectedQrcodeType 'wecom')}}
           <div class="qrcode-box-wrapper">
-            <div id="qrcode-classin" class="qrcode-box"></div>
+            <div id="qrcode-wecom" class="qrcode-box"></div>
           </div>
-        {{else}}
-          <div class="qrcode-placeholder">
-            <div class="qrcode-placeholder-title">功能即将上线</div>
-            <div class="qrcode-placeholder-desc">Classin 扫码登录功能开发中</div>
-          </div>
+        {{else if (eq this.selectedQrcodeType 'classin')}}
+          {{#if this.classinAvailable}}
+            <div class="qrcode-box-wrapper">
+              <div id="qrcode-classin" class="qrcode-box"></div>
+            </div>
+          {{else}}
+            <div class="qrcode-placeholder">
+              <div class="qrcode-placeholder-title">功能即将上线</div>
+              <div class="qrcode-placeholder-desc">Classin 扫码登录功能开发中</div>
+            </div>
+          {{/if}}
         {{/if}}
       {{/if}}
-    {{/if}}
+    </div>
   </div>
-</div>
+{{/if}}

@@ -4,6 +4,7 @@ import { tracked } from "@glimmer/tracking";
 import { ajax } from "discourse/lib/ajax";
 
 let qrcodeLibraryPromise;
+const TARGET_PATH = "/login";
 
 function ensureQrcodeLibrary() {
   if (window.QRCode) {
@@ -35,8 +36,21 @@ export default class DiscourseQrcodeLoginComponent extends Component {
 
   qrcodeInstances = {};
 
+  get shouldRender() {
+    if (typeof window === "undefined") {
+      return false;
+    }
+
+    const { pathname } = window.location;
+    return pathname === TARGET_PATH;
+  }
+
   @action
   async setup() {
+    if (!this.shouldRender) {
+      return;
+    }
+
     try {
       await ensureQrcodeLibrary();
       await this.loadQrcode("wecom");

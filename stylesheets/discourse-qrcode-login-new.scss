@@ -1,0 +1,344 @@
+/**
+ * Discourse 二维码扫码登录组件样式
+ * 集成到官方登录页右侧
+ */
+
+.qrcode-login-section {
+  width: 100%;
+  max-width: 320px;
+  margin: 20px auto 0;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e8e8e8;
+}
+
+.qrcode-section-header {
+  text-align: center;
+  margin-bottom: 20px;
+
+  h2 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0 0 4px;
+  }
+}
+
+.qrcode-section-subtitle {
+  font-size: 12px;
+  color: #95a5a6;
+  margin: 0;
+}
+
+// Tab 切换按钮
+.qrcode-tabs-wrapper {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 15px;
+  width: 100%;
+}
+
+.qrcode-tab {
+  flex: 1;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  border: 2px solid #ecf0f1;
+  background: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  color: #7f8c8d;
+  transition: all 0.3s ease;
+  outline: none;
+
+  &:hover {
+    border-color: #bdc3c7;
+    background: #f8f9fa;
+  }
+
+  &.active {
+    border-color: #e74c3c;
+    background: #e74c3c;
+    color: white;
+
+    &:hover {
+      background: #d73728;
+      border-color: #d73728;
+    }
+  }
+
+  .qrcode-tab-icon {
+    font-size: 16px;
+  }
+
+  .qrcode-tab-label {
+    font-size: 11px;
+  }
+}
+
+// 二维码加载状态
+.qrcode-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 30px 20px;
+  color: #7f8c8d;
+
+  .qrcode-spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid #ecf0f1;
+    border-top-color: #3498db;
+    border-radius: 50%;
+    animation: qrcode-spin 0.8s linear infinite;
+  }
+
+  @keyframes qrcode-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+}
+
+// 二维码错误状态
+.qrcode-error-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 15px;
+  background: #fef5f5;
+  border: 1px solid #f5a6a6;
+  border-radius: 6px;
+  color: #d73728;
+  text-align: center;
+
+  .qrcode-error-icon {
+    font-size: 24px;
+  }
+
+  .qrcode-error-text {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .qrcode-retry-btn {
+    padding: 6px 12px;
+    background: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background: #d73728;
+    }
+  }
+}
+
+// 二维码显示区域
+.qrcode-display-area {
+  width: 100%;
+}
+
+.qrcode-box-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  animation: fadeIn 0.3s ease;
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(5px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+.qrcode-box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: white;
+  border: 1px solid #ecf0f1;
+  border-radius: 8px;
+  padding: 8px;
+  width: 100%;
+  max-width: 200px;
+
+  canvas,
+  img {
+    max-width: 100%;
+    max-height: 200px;
+    display: block;
+  }
+}
+
+.qrcode-info {
+  text-align: center;
+  width: 100%;
+}
+
+.qrcode-method {
+  font-size: 13px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 4px;
+}
+
+.qrcode-description {
+  font-size: 11px;
+  color: #95a5a6;
+  line-height: 1.4;
+}
+
+// 占位符（功能即将上线）
+.qrcode-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 30px 20px;
+  background: white;
+  border: 2px dashed #ecf0f1;
+  border-radius: 8px;
+  text-align: center;
+  color: #95a5a6;
+
+  .qrcode-placeholder-icon {
+    font-size: 32px;
+    opacity: 0.6;
+  }
+
+  .qrcode-placeholder-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #7f8c8d;
+    margin: 0;
+  }
+
+  .qrcode-placeholder-desc {
+    font-size: 11px;
+    color: #bdc3c7;
+    margin: 0;
+  }
+}
+
+// 提示信息
+.qrcode-tips-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 10px;
+  background: #ecf7ff;
+  border-radius: 6px;
+  font-size: 11px;
+  color: #2980b9;
+  text-align: center;
+
+  .qrcode-tips-icon {
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+
+  .qrcode-tips-text {
+    flex: 1;
+  }
+}
+
+// 连接器包装
+.qrcode-login-connector {
+  width: 100%;
+  margin-top: 20px;
+}
+
+// 响应式设计
+@media (max-width: 600px) {
+  .qrcode-login-section {
+    max-width: 100%;
+    margin: 15px -5px 0;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
+
+  .qrcode-section-header h2 {
+    font-size: 14px;
+  }
+
+  .qrcode-section-subtitle {
+    font-size: 11px;
+  }
+
+  .qrcode-tabs-wrapper {
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+
+  .qrcode-tab {
+    padding: 6px 8px;
+    font-size: 11px;
+
+    .qrcode-tab-icon {
+      font-size: 14px;
+    }
+
+    .qrcode-tab-label {
+      font-size: 10px;
+    }
+  }
+
+  .qrcode-box {
+    padding: 6px;
+
+    canvas,
+    img {
+      max-height: 150px;
+    }
+  }
+
+  .qrcode-method {
+    font-size: 12px;
+  }
+
+  .qrcode-description {
+    font-size: 10px;
+  }
+
+  .qrcode-placeholder {
+    padding: 20px 15px;
+
+    .qrcode-placeholder-icon {
+      font-size: 24px;
+    }
+
+    .qrcode-placeholder-title {
+      font-size: 12px;
+    }
+
+    .qrcode-placeholder-desc {
+      font-size: 10px;
+    }
+  }
+
+  .qrcode-tips-bar {
+    font-size: 10px;
+    padding: 8px;
+  }
+}

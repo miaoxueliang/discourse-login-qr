@@ -1,0 +1,92 @@
+{{!-- 
+  Discourse 二维码扫码登录组件
+  显示在登录页右侧：企微二维码 / Classin 二维码 Tab 切换
+--}}
+
+<div class="qrcode-login-section">
+  {{!-- 二维码区域标题 --}}
+  <div class="qrcode-section-header">
+    <h2>快速登录</h2>
+    <p class="qrcode-section-subtitle">使用手机应用扫码登录</p>
+  </div>
+
+  {{!-- Tab 切换按钮 --}}
+  <div class="qrcode-tabs-wrapper">
+    <button 
+      class="qrcode-tab {{if (eq this.selectedQrcodeType 'wecom') 'active'}}"
+      {{on "click" (fn this.selectQrcodeType "wecom")}}
+      title="企业微信扫码登录">
+      <span class="qrcode-tab-icon">🏢</span>
+      <span class="qrcode-tab-label">企微扫码</span>
+    </button>
+    <button 
+      class="qrcode-tab {{if (eq this.selectedQrcodeType 'classin') 'active'}}"
+      {{on "click" (fn this.selectQrcodeType "classin")}}
+      title="Classin App 扫码登录">
+      <span class="qrcode-tab-icon">📱</span>
+      <span class="qrcode-tab-label">Classin扫码</span>
+    </button>
+  </div>
+
+  {{!-- 二维码加载状态 --}}
+  {{#if this.isLoadingQrcode}}
+    <div class="qrcode-loading">
+      <div class="qrcode-spinner"></div>
+      <span>加载中...</span>
+    </div>
+  {{/if}}
+
+  {{!-- 二维码错误状态 --}}
+  {{#if this.qrcodeError}}
+    <div class="qrcode-error-box">
+      <div class="qrcode-error-icon">⚠️</div>
+      <p class="qrcode-error-text">{{this.qrcodeError}}</p>
+      <button {{on "click" this.retryLoadQrcode}} class="qrcode-retry-btn">
+        重试
+      </button>
+    </div>
+  {{/if}}
+
+  {{!-- 二维码显示区域 --}}
+  {{#unless this.isLoadingQrcode}}
+    {{#unless this.qrcodeError}}
+      <div class="qrcode-display-area">
+        {{!-- 企微二维码 --}}
+        {{#if (eq this.selectedQrcodeType 'wecom')}}
+          <div class="qrcode-box-wrapper">
+            <div id="qrcode-wecom" class="qrcode-box"></div>
+            <div class="qrcode-info">
+              <div class="qrcode-method">企业微信登录</div>
+              <div class="qrcode-description">用企业微信 App 扫描二维码快速登录</div>
+            </div>
+          </div>
+        {{/if}}
+
+        {{!-- Classin 二维码 --}}
+        {{#if (eq this.selectedQrcodeType 'classin')}}
+          <div class="qrcode-box-wrapper">
+            {{#if this.classinAvailable}}
+              <div id="qrcode-classin" class="qrcode-box"></div>
+              <div class="qrcode-info">
+                <div class="qrcode-method">Classin App 登录</div>
+                <div class="qrcode-description">用 Classin App 扫描二维码快速登录</div>
+              </div>
+            {{else}}
+              <div class="qrcode-placeholder">
+                <div class="qrcode-placeholder-icon">📱</div>
+                <div class="qrcode-placeholder-title">功能即将上线</div>
+                <div class="qrcode-placeholder-desc">Classin 扫码登录功能开发中，敬请期待</div>
+              </div>
+            {{/if}}
+          </div>
+        {{/if}}
+      </div>
+
+      {{!-- 提示信息 --}}
+      <div class="qrcode-tips-bar">
+        <span class="qrcode-tips-icon">💡</span>
+        <span class="qrcode-tips-text">扫描二维码，使用手机快速登录</span>
+      </div>
+    {{/unless}}
+  {{/unless}}
+</div>

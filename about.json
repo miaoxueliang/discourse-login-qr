@@ -1,20 +1,8 @@
 {
-  "name": "EEO QRCode Login Theme",
-  "about_url": "https://github.com/eeo-edu/discourse-qrcode-login",
-  "theme_version": "1.0.0",
-  "author": "EEO Development Team",
-  "description": "为 Discourse 添加企微和 Classin 二维码扫码登录功能。支持 Tab 切换不同登录方式。",
-  "components": [
-    "discourse-qrcode-login"
-  ],
-  "assets": {
-    "qrcode-lib": "https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"
-  },
-  "color_definitions": {},
-  "mixed_color_definitions": {},
-  "color_schemes": {},
-  "modifiers": {},
-  "explicit_about_attributes": [
-    "components"
-  ]
+  "name": "Discourse Login QR",
+  "component": true,
+  "about_url": "https://github.com/miaoxueliang/discourse-login-qr",
+  "license_url": "https://github.com/miaoxueliang/discourse-login-qr/blob/main/LICENSE",
+  "theme_version": "1.0.1",
+  "authors": "EEO Development Team"
 }

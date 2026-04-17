@@ -8,17 +8,6 @@ let wwLoginLibraryPromise;
 const TARGET_PATH = "/login";
 const WECOM_POLL_INTERVAL = 2000;
 const WECOM_POLL_TIMEOUT = 5 * 60 * 1000;
-const WECOM_AUTO_REDIRECT_MARK = "discourse-wecom-auto-redirect";
-
-function isMobileBrowser() {
-  if (typeof window === "undefined") {
-    return false;
-  }
-
-  return /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile/i.test(
-    window.navigator?.userAgent || ""
-  );
-}
 
 function ensureQrcodeLibrary() {
   if (window.QRCode) {
@@ -89,10 +78,6 @@ export default class DiscourseQrcodeLoginComponent extends Component {
       return;
     }
 
-    if (this.tryAutoRedirectToOauth()) {
-      return;
-    }
-
     try {
       await this.loadQrcode("wecom");
     } catch (error) {
@@ -104,22 +89,6 @@ export default class DiscourseQrcodeLoginComponent extends Component {
   teardown() {
     this.stopWecomPolling();
     this.qrcodeInstances = {};
-  }
-
-  tryAutoRedirectToOauth() {
-    if (typeof window === "undefined" || !isMobileBrowser()) {
-      return false;
-    }
-
-    const currentUrl = `${window.location.pathname}${window.location.search}`;
-    const storageKey = `${WECOM_AUTO_REDIRECT_MARK}:${currentUrl}`;
-    if (window.sessionStorage.getItem(storageKey)) {
-      return false;
-    }
-
-    window.sessionStorage.setItem(storageKey, "1");
-    window.location.assign("/auth/oauth2_basic");
-    return true;
   }
 
   @action

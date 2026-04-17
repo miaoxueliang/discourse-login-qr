@@ -129,10 +129,17 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  flex-direction: column;
   background: white;
   border: 1px solid #e0e0e0;
   border-radius: 4px;
   padding: 8px;
+  width: 100%;
+  min-height: 212px;
+
+  iframe {
+    max-width: 100%;
+  }
 
   canvas,
   img {
@@ -140,6 +147,13 @@
     max-height: 120px;
     display: block;
   }
+}
+
+.qrcode-status-text {
+  font-size: 12px;
+  color: #666;
+  line-height: 1.5;
+  text-align: center;
 }
 
 .qrcode-placeholder {
@@ -194,6 +208,8 @@
   }
 
   .qrcode-box {
+    min-height: 188px;
+
     canvas,
     img {
       max-width: 100px;

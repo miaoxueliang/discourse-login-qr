@@ -43,6 +43,7 @@
         {{#if (eq this.selectedQrcodeType 'wecom')}}
           <div class="qrcode-box-wrapper">
             <div id="qrcode-wecom" class="qrcode-box"></div>
+            <div class="qrcode-status-text">{{this.wecomStatusText}}</div>
           </div>
         {{else if (eq this.selectedQrcodeType 'classin')}}
           {{#if this.classinAvailable}}

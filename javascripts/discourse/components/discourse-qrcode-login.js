@@ -307,11 +307,28 @@ export default class DiscourseQrcodeLoginComponent extends Component {
     }
 
     try {
+      let redirectOrigin = "";
+      try {
+        redirectOrigin = new URL(payload.redirectUri).origin;
+      } catch (_error) {
+        redirectOrigin = "invalid-url";
+      }
+
+      // eslint-disable-next-line no-console
+      console.info("[WwLogin] init widget", {
+        appId: payload.appId,
+        agentId: payload.agentId,
+        redirectUri: payload.redirectUri,
+        redirectOrigin,
+        state: payload.state,
+      });
+
       new WwLogin({
         id: "qrcode-wecom",
         appid: payload.appId,
         agentid: payload.agentId,
-        redirect_uri: encodeURIComponent(payload.redirectUri),
+        // WwLogin handles redirect_uri internally; double-encoding can trigger domain mismatch.
+        redirect_uri: payload.redirectUri,
         state: payload.state,
         lang: "zh",
       });

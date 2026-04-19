@@ -72,6 +72,11 @@ function nextAnimationFrame() {
   });
 }
 
+async function waitForContainerRender() {
+  await nextAnimationFrame();
+  await nextAnimationFrame();
+}
+
 function ensureQrcodeLibrary() {
   if (window.QRCode) {
     return Promise.resolve();
@@ -125,6 +130,7 @@ export default class DiscourseQrcodeLoginComponent extends Component {
   qrcodeInstances = {};
   wecomPollTimer = null;
   wecomRenderFallbackTimer = null;
+  wecomWidgetFitTimer = null;
   wecomPollStartedAt = 0;
   wecomWidgetEnabled = true;
 
@@ -154,24 +160,29 @@ export default class DiscourseQrcodeLoginComponent extends Component {
   teardown() {
     this.stopWecomPolling();
     this.clearWecomRenderFallbackTimer();
+    this.clearWecomWidgetFitTimer();
     this.qrcodeInstances = {};
   }
 
   @action
   async loadQrcode(type, options = {}) {
     const { forceRefresh = false } = options;
+    this.qrcodeError = null;
+
+    if (type === "wecom") {
+      this.wecomStatusText = "正在加载企微二维码...";
+      this.stopWecomPolling();
+      this.clearWecomRenderFallbackTimer();
+      this.clearWecomWidgetFitTimer();
+    }
+
     if (!forceRefresh && this.qrcodePayloads[type]) {
+      await waitForContainerRender();
       await this.renderPayload(type, this.qrcodePayloads[type]);
       return;
     }
 
     this.isLoadingQrcode = true;
-    this.qrcodeError = null;
-    if (type === "wecom") {
-      this.wecomStatusText = "正在加载企微二维码...";
-      this.stopWecomPolling();
-      this.clearWecomRenderFallbackTimer();
-    }
 
     const apiUrl = buildQrcodeApiUrl();
 
@@ -206,7 +217,7 @@ export default class DiscourseQrcodeLoginComponent extends Component {
 
         // Switch out of loading state first, then wait one frame so QR containers exist in DOM.
         this.isLoadingQrcode = false;
-        await nextAnimationFrame();
+        await waitForContainerRender();
         await this.renderPayload(type, payload);
       } else {
         this.qrcodeError = response?.message || "获取二维码失败，请稍后重试";
@@ -297,6 +308,7 @@ export default class DiscourseQrcodeLoginComponent extends Component {
         lang: "zh",
       });
       this.wecomStatusText = "请使用企业微信扫描二维码";
+      this.scheduleWecomWidgetFit(container);
 
       // If third-party iframe is blocked by CSP/network, fall back to a regular QR image.
       this.wecomRenderFallbackTimer = window.setTimeout(async () => {
@@ -309,6 +321,7 @@ export default class DiscourseQrcodeLoginComponent extends Component {
           await ensureQrcodeLibrary();
           this.renderQrcode("wecom", payload?.url);
           this.wecomStatusText = "请使用企业微信扫码（兼容模式）";
+          this.clearWecomWidgetFitTimer();
         } catch (_error) {
           this.qrcodeError = "企微二维码加载失败，请稍后重试";
         }
@@ -323,6 +336,42 @@ export default class DiscourseQrcodeLoginComponent extends Component {
       window.clearTimeout(this.wecomRenderFallbackTimer);
       this.wecomRenderFallbackTimer = null;
     }
+  }
+
+  clearWecomWidgetFitTimer() {
+    if (this.wecomWidgetFitTimer) {
+      window.clearTimeout(this.wecomWidgetFitTimer);
+      this.wecomWidgetFitTimer = null;
+    }
+  }
+
+  scheduleWecomWidgetFit(container, attempt = 0) {
+    this.clearWecomWidgetFitTimer();
+    this.wecomWidgetFitTimer = window.setTimeout(() => {
+      const iframe = container?.querySelector("iframe");
+      if (!iframe) {
+        if (attempt < 10) {
+          this.scheduleWecomWidgetFit(container, attempt + 1);
+        }
+        return;
+      }
+
+      const availableWidth = Math.max(container.clientWidth - 8, 220);
+      const widgetWidth = iframe.offsetWidth || 300;
+      const widgetHeight = iframe.offsetHeight || 360;
+      const scale = Math.min(1, availableWidth / widgetWidth);
+
+      iframe.style.width = `${widgetWidth}px`;
+      iframe.style.height = `${widgetHeight}px`;
+      iframe.style.maxWidth = "none";
+      iframe.style.transform = `scale(${scale})`;
+      iframe.style.transformOrigin = "top center";
+      iframe.style.margin = "0 auto";
+      iframe.style.display = "block";
+
+      container.style.minHeight = `${Math.ceil(widgetHeight * scale) + 20}px`;
+      container.style.paddingBottom = "8px";
+    }, 180);
   }
 
   startWecomPolling(payload) {
@@ -384,7 +433,9 @@ export default class DiscourseQrcodeLoginComponent extends Component {
     if (type !== "wecom") {
       this.stopWecomPolling();
       this.clearWecomRenderFallbackTimer();
+      this.clearWecomWidgetFitTimer();
     }
+    await waitForContainerRender();
     await this.loadQrcode(type);
   }
 

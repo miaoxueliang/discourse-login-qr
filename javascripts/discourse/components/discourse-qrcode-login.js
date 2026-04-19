@@ -3,7 +3,6 @@ import { action } from "@ember/object";
 import { tracked } from "@glimmer/tracking";
 
 let qrcodeLibraryPromise;
-let wwLoginLibraryPromise;
 const TARGET_PATH = "/login";
 const WECOM_POLL_INTERVAL = 2000;
 const WECOM_POLL_TIMEOUT = 5 * 60 * 1000;
@@ -98,25 +97,16 @@ function ensureQrcodeLibrary() {
   return qrcodeLibraryPromise;
 }
 
-function ensureWwLoginLibrary() {
-  if (window.WwLogin) {
-    return Promise.resolve();
-  }
-
-  if (wwLoginLibraryPromise) {
-    return wwLoginLibraryPromise;
-  }
-
-  wwLoginLibraryPromise = new Promise((resolve, reject) => {
-    const script = document.createElement("script");
-    script.src = "https://wwcdn.weixin.qq.com/node/wework/wwopen/js/wwLogin-1.2.0.js";
-    script.async = true;
-    script.onload = () => resolve();
-    script.onerror = () => reject(new Error("企业微信扫码库加载失败"));
-    document.head.appendChild(script);
+function buildWecomWidgetUrl(payload) {
+  const query = new URLSearchParams({
+    appid: String(payload?.appId || ""),
+    agentid: String(payload?.agentId || ""),
+    redirect_uri: String(payload?.redirectUri || ""),
+    state: String(payload?.state || ""),
+    lang: "zh",
   });
 
-  return wwLoginLibraryPromise;
+  return `https://open.work.weixin.qq.com/wwopen/sso/qrConnect?${query.toString()}`;
 }
 
 export default class DiscourseQrcodeLoginComponent extends Component {
@@ -193,16 +183,7 @@ export default class DiscourseQrcodeLoginComponent extends Component {
     try {
       if (type === "wecom") {
         this.wecomWidgetEnabled = this.useWecomOfficialWidget;
-        if (this.wecomWidgetEnabled) {
-          try {
-            await ensureWwLoginLibrary();
-          } catch (error) {
-            // CSP/network may block external script from wwcdn; continue with normal QR fallback.
-            // eslint-disable-next-line no-console
-            console.warn("[WwLogin] widget script blocked, fallback to plain QR", error);
-            this.wecomWidgetEnabled = false;
-          }
-        } else {
+        if (!this.wecomWidgetEnabled) {
           await ensureQrcodeLibrary();
         }
       } else {
@@ -284,8 +265,7 @@ export default class DiscourseQrcodeLoginComponent extends Component {
   }
 
   renderWecomQrcode(payload) {
-    const WwLogin = window.WwLogin;
-    const shouldUseWidget = this.wecomWidgetEnabled && !!WwLogin;
+    const shouldUseWidget = this.wecomWidgetEnabled;
 
     const container = document.getElementById("qrcode-wecom");
     if (!container) {
@@ -307,6 +287,7 @@ export default class DiscourseQrcodeLoginComponent extends Component {
     }
 
     try {
+      const widgetUrl = buildWecomWidgetUrl(payload);
       let redirectOrigin = "";
       try {
         redirectOrigin = new URL(payload.redirectUri).origin;
@@ -321,17 +302,20 @@ export default class DiscourseQrcodeLoginComponent extends Component {
         redirectUri: payload.redirectUri,
         redirectOrigin,
         state: payload.state,
+        widgetUrl,
       });
 
-      new WwLogin({
-        id: "qrcode-wecom",
-        appid: payload.appId,
-        agentid: payload.agentId,
-        // WwLogin handles redirect_uri internally; double-encoding can trigger domain mismatch.
-        redirect_uri: payload.redirectUri,
-        state: payload.state,
-        lang: "zh",
-      });
+      const iframe = document.createElement("iframe");
+      iframe.src = widgetUrl;
+      iframe.width = "300";
+      iframe.height = "360";
+      iframe.scrolling = "no";
+      iframe.frameBorder = "0";
+      iframe.style.border = "0";
+      iframe.style.display = "block";
+      iframe.style.margin = "0 auto";
+      container.appendChild(iframe);
+
       this.wecomStatusText = "请使用企业微信扫描二维码";
       this.scheduleWecomWidgetFit(container);
 

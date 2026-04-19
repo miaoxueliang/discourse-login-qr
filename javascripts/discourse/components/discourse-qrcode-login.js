@@ -66,6 +66,12 @@ async function fetchJson(url, params = null) {
   return response.json();
 }
 
+function nextAnimationFrame() {
+  return new Promise((resolve) => {
+    window.requestAnimationFrame(() => resolve());
+  });
+}
+
 function ensureQrcodeLibrary() {
   if (window.QRCode) {
     return Promise.resolve();
@@ -198,6 +204,9 @@ export default class DiscourseQrcodeLoginComponent extends Component {
           this.classinAvailable = true;
         }
 
+        // Switch out of loading state first, then wait one frame so QR containers exist in DOM.
+        this.isLoadingQrcode = false;
+        await nextAnimationFrame();
         await this.renderPayload(type, payload);
       } else {
         this.qrcodeError = response?.message || "获取二维码失败，请稍后重试";
@@ -211,7 +220,9 @@ export default class DiscourseQrcodeLoginComponent extends Component {
         ? `获取二维码失败 (HTTP ${status})，请检查后端 API 是否可访问`
         : `获取二维码失败: ${msg || "请检查 qrcode_api_base_url 与 qrcode_api_path_prefix 设置"}`;
     } finally {
-      this.isLoadingQrcode = false;
+      if (this.isLoadingQrcode) {
+        this.isLoadingQrcode = false;
+      }
     }
   }
 

@@ -359,7 +359,7 @@ export default class DiscourseQrcodeLoginComponent extends Component {
       const availableWidth = Math.max(container.clientWidth - 8, 220);
       const widgetWidth = iframe.offsetWidth || 300;
       const widgetHeight = iframe.offsetHeight || 360;
-      const scale = Math.min(1, availableWidth / widgetWidth);
+      const scale = Math.min(0.9, availableWidth / widgetWidth);
 
       iframe.style.width = `${widgetWidth}px`;
       iframe.style.height = `${widgetHeight}px`;

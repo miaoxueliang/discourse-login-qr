@@ -1,13 +1,69 @@
 import Component from "@glimmer/component";
 import { action } from "@ember/object";
 import { tracked } from "@glimmer/tracking";
-import { ajax } from "discourse/lib/ajax";
 
 let qrcodeLibraryPromise;
 let wwLoginLibraryPromise;
 const TARGET_PATH = "/login";
 const WECOM_POLL_INTERVAL = 2000;
 const WECOM_POLL_TIMEOUT = 5 * 60 * 1000;
+const DEFAULT_API_PATH_PREFIX = "/eeo";
+
+function normalizePathPrefix(pathPrefix) {
+  const raw = String(pathPrefix || "").trim();
+  if (!raw) {
+    return "";
+  }
+
+  const withSlash = raw.startsWith("/") ? raw : `/${raw}`;
+  return withSlash.replace(/\/$/, "");
+}
+
+function buildQrcodeApiUrl() {
+  const baseUrl = (settings.qrcode_api_base_url || window.location.origin || "").replace(
+    /\/$/, ""
+  );
+  let pathPrefix = normalizePathPrefix(
+    settings.qrcode_api_path_prefix || DEFAULT_API_PATH_PREFIX
+  );
+
+  if (pathPrefix && baseUrl.toLowerCase().endsWith(pathPrefix.toLowerCase())) {
+    pathPrefix = "";
+  }
+
+  return `${baseUrl}${pathPrefix}/v1/api/discourse/qrcode/url`;
+}
+
+async function fetchJson(url, params = null) {
+  const requestUrl = new URL(url, window.location.origin);
+  if (params) {
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        requestUrl.searchParams.set(key, value);
+      }
+    });
+  }
+
+  const response = await window.fetch(requestUrl.toString(), {
+    method: "GET",
+    mode: "cors",
+    credentials: "omit",
+    cache: "no-store",
+    headers: {
+      Accept: "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    const responseText = await response.text();
+    const error = new Error(responseText || response.statusText || "request failed");
+    error.status = response.status;
+    error.statusText = response.statusText;
+    throw error;
+  }
+
+  return response.json();
+}
 
 function ensureQrcodeLibrary() {
   if (window.QRCode) {
@@ -106,8 +162,7 @@ export default class DiscourseQrcodeLoginComponent extends Component {
       this.stopWecomPolling();
     }
 
-    const baseUrl = (settings.qrcode_api_base_url || "").replace(/\/$/, "");
-    const apiUrl = `${baseUrl}/v1/api/discourse/qrcode/url`;
+    const apiUrl = buildQrcodeApiUrl();
 
     try {
       if (type === "wecom") {
@@ -116,9 +171,7 @@ export default class DiscourseQrcodeLoginComponent extends Component {
         await ensureQrcodeLibrary();
       }
 
-      const response = await ajax(apiUrl, {
-        data: { type },
-      });
+      const response = await fetchJson(apiUrl, { type });
 
       if (response?.code === 0 && response?.data) {
         const payload = response.data;
@@ -139,11 +192,11 @@ export default class DiscourseQrcodeLoginComponent extends Component {
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error("[QRCode] API error:", apiUrl, error);
-      const status = error?.jqXHR?.status || error?.status;
-      const msg = error?.jqXHR?.statusText || error?.responseText || error?.message;
+      const status = error?.status;
+      const msg = error?.statusText || error?.message;
       this.qrcodeError = status
         ? `获取二维码失败 (HTTP ${status})，请检查后端 API 是否可访问`
-        : `获取二维码失败: ${msg || "请检查 qrcode_api_base_url 设置"}`;
+        : `获取二维码失败: ${msg || "请检查 qrcode_api_base_url 与 qrcode_api_path_prefix 设置"}`;
     } finally {
       this.isLoadingQrcode = false;
     }
@@ -239,7 +292,7 @@ export default class DiscourseQrcodeLoginComponent extends Component {
       }
 
       try {
-        const response = await ajax(payload.statusUrl);
+        const response = await fetchJson(payload.statusUrl);
         const status = response?.data?.status || response?.status;
 
         if (status === "confirmed") {

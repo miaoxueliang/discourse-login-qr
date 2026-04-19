@@ -120,6 +120,7 @@ export default class DiscourseQrcodeLoginComponent extends Component {
   wecomPollTimer = null;
   wecomRenderFallbackTimer = null;
   wecomPollStartedAt = 0;
+  wecomWidgetEnabled = true;
 
   get shouldRender() {
     if (typeof window === "undefined") {
@@ -170,7 +171,15 @@ export default class DiscourseQrcodeLoginComponent extends Component {
 
     try {
       if (type === "wecom") {
-        await ensureWwLoginLibrary();
+        this.wecomWidgetEnabled = true;
+        try {
+          await ensureWwLoginLibrary();
+        } catch (error) {
+          // CSP may block external script from wwcdn; continue with normal QR fallback.
+          // eslint-disable-next-line no-console
+          console.warn("[WwLogin] widget script blocked, fallback to plain QR", error);
+          this.wecomWidgetEnabled = false;
+        }
       } else {
         await ensureQrcodeLibrary();
       }
@@ -246,10 +255,7 @@ export default class DiscourseQrcodeLoginComponent extends Component {
 
   renderWecomQrcode(payload) {
     const WwLogin = window.WwLogin;
-    if (!WwLogin) {
-      this.qrcodeError = "企业微信扫码库未加载完成，请稍后重试";
-      return;
-    }
+    const shouldUseWidget = this.wecomWidgetEnabled && !!WwLogin;
 
     const container = document.getElementById("qrcode-wecom");
     if (!container) {
@@ -257,6 +263,18 @@ export default class DiscourseQrcodeLoginComponent extends Component {
     }
 
     container.innerHTML = "";
+
+    if (!shouldUseWidget) {
+      ensureQrcodeLibrary()
+        .then(() => {
+          this.renderQrcode("wecom", payload?.url);
+          this.wecomStatusText = "请使用企业微信扫码（兼容模式）";
+        })
+        .catch(() => {
+          this.qrcodeError = "企微二维码加载失败，请稍后重试";
+        });
+      return;
+    }
 
     try {
       new WwLogin({

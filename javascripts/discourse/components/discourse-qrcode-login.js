@@ -99,6 +99,7 @@ function ensureQrcodeLibrary() {
 
 function buildWecomWidgetUrl(payload) {
   const query = new URLSearchParams({
+    login_type: "CorpApp",
     appid: String(payload?.appId || ""),
     agentid: String(payload?.agentId || ""),
     redirect_uri: String(payload?.redirectUri || ""),
@@ -106,7 +107,7 @@ function buildWecomWidgetUrl(payload) {
     lang: "zh",
   });
 
-  return `https://open.work.weixin.qq.com/wwopen/sso/qrConnect?${query.toString()}`;
+  return `https://login.work.weixin.qq.com/wwlogin/sso/login?${query.toString()}`;
 }
 
 export default class DiscourseQrcodeLoginComponent extends Component {

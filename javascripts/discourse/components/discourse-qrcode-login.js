@@ -134,6 +134,10 @@ export default class DiscourseQrcodeLoginComponent extends Component {
   wecomPollStartedAt = 0;
   wecomWidgetEnabled = true;
 
+  get useWecomOfficialWidget() {
+    return !!settings.wecom_use_official_widget;
+  }
+
   get shouldRender() {
     if (typeof window === "undefined") {
       return false;
@@ -188,14 +192,18 @@ export default class DiscourseQrcodeLoginComponent extends Component {
 
     try {
       if (type === "wecom") {
-        this.wecomWidgetEnabled = true;
-        try {
-          await ensureWwLoginLibrary();
-        } catch (error) {
-          // CSP may block external script from wwcdn; continue with normal QR fallback.
-          // eslint-disable-next-line no-console
-          console.warn("[WwLogin] widget script blocked, fallback to plain QR", error);
-          this.wecomWidgetEnabled = false;
+        this.wecomWidgetEnabled = this.useWecomOfficialWidget;
+        if (this.wecomWidgetEnabled) {
+          try {
+            await ensureWwLoginLibrary();
+          } catch (error) {
+            // CSP/network may block external script from wwcdn; continue with normal QR fallback.
+            // eslint-disable-next-line no-console
+            console.warn("[WwLogin] widget script blocked, fallback to plain QR", error);
+            this.wecomWidgetEnabled = false;
+          }
+        } else {
+          await ensureQrcodeLibrary();
         }
       } else {
         await ensureQrcodeLibrary();

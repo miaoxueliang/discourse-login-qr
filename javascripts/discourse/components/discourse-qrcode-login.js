@@ -8,6 +8,7 @@ const WECOM_POLL_INTERVAL = 2000;
 const WECOM_POLL_TIMEOUT = 5 * 60 * 1000;
 const WECOM_WIDGET_RENDER_TIMEOUT = 2500;
 const DEFAULT_API_PATH_PREFIX = "/eeo";
+const WECOM_WIDGET_IMPL_VERSION = "2026-04-19.3";
 
 function normalizePathPrefix(pathPrefix) {
   const raw = String(pathPrefix || "").trim();
@@ -298,6 +299,7 @@ export default class DiscourseQrcodeLoginComponent extends Component {
 
       // eslint-disable-next-line no-console
       console.info("[WwLogin] init widget", {
+        implVersion: WECOM_WIDGET_IMPL_VERSION,
         appId: payload.appId,
         agentId: payload.agentId,
         redirectUri: payload.redirectUri,

@@ -7,6 +7,7 @@ let wwLoginLibraryPromise;
 const TARGET_PATH = "/login";
 const WECOM_POLL_INTERVAL = 2000;
 const WECOM_POLL_TIMEOUT = 5 * 60 * 1000;
+const WECOM_WIDGET_RENDER_TIMEOUT = 2500;
 const DEFAULT_API_PATH_PREFIX = "/eeo";
 
 function normalizePathPrefix(pathPrefix) {
@@ -117,6 +118,7 @@ export default class DiscourseQrcodeLoginComponent extends Component {
 
   qrcodeInstances = {};
   wecomPollTimer = null;
+  wecomRenderFallbackTimer = null;
   wecomPollStartedAt = 0;
 
   get shouldRender() {
@@ -144,6 +146,7 @@ export default class DiscourseQrcodeLoginComponent extends Component {
   @action
   teardown() {
     this.stopWecomPolling();
+    this.clearWecomRenderFallbackTimer();
     this.qrcodeInstances = {};
   }
 
@@ -160,6 +163,7 @@ export default class DiscourseQrcodeLoginComponent extends Component {
     if (type === "wecom") {
       this.wecomStatusText = "正在加载企微二维码...";
       this.stopWecomPolling();
+      this.clearWecomRenderFallbackTimer();
     }
 
     const apiUrl = buildQrcodeApiUrl();
@@ -264,8 +268,31 @@ export default class DiscourseQrcodeLoginComponent extends Component {
         lang: "zh",
       });
       this.wecomStatusText = "请使用企业微信扫描二维码";
+
+      // If third-party iframe is blocked by CSP/network, fall back to a regular QR image.
+      this.wecomRenderFallbackTimer = window.setTimeout(async () => {
+        const hasWidget = !!container.querySelector("iframe, img, canvas");
+        if (hasWidget) {
+          return;
+        }
+
+        try {
+          await ensureQrcodeLibrary();
+          this.renderQrcode("wecom", payload?.url);
+          this.wecomStatusText = "请使用企业微信扫码（兼容模式）";
+        } catch (_error) {
+          this.qrcodeError = "企微二维码加载失败，请稍后重试";
+        }
+      }, WECOM_WIDGET_RENDER_TIMEOUT);
     } catch (error) {
       this.qrcodeError = `企微二维码加载失败: ${error?.message || "未知错误"}`;
+    }
+  }
+
+  clearWecomRenderFallbackTimer() {
+    if (this.wecomRenderFallbackTimer) {
+      window.clearTimeout(this.wecomRenderFallbackTimer);
+      this.wecomRenderFallbackTimer = null;
     }
   }
 
@@ -327,6 +354,7 @@ export default class DiscourseQrcodeLoginComponent extends Component {
     this.selectedQrcodeType = type;
     if (type !== "wecom") {
       this.stopWecomPolling();
+      this.clearWecomRenderFallbackTimer();
     }
     await this.loadQrcode(type);
   }

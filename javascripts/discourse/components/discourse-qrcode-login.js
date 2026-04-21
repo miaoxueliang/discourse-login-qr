@@ -1,13 +1,81 @@
 import Component from "@glimmer/component";
 import { action } from "@ember/object";
 import { tracked } from "@glimmer/tracking";
-import { ajax } from "discourse/lib/ajax";
 
 let qrcodeLibraryPromise;
-let wwLoginLibraryPromise;
 const TARGET_PATH = "/login";
 const WECOM_POLL_INTERVAL = 2000;
 const WECOM_POLL_TIMEOUT = 5 * 60 * 1000;
+const WECOM_WIDGET_RENDER_TIMEOUT = 2500;
+const DEFAULT_API_PATH_PREFIX = "/eeo";
+const WECOM_WIDGET_IMPL_VERSION = "2026-04-19.3";
+
+function normalizePathPrefix(pathPrefix) {
+  const raw = String(pathPrefix || "").trim();
+  if (!raw) {
+    return "";
+  }
+
+  const withSlash = raw.startsWith("/") ? raw : `/${raw}`;
+  return withSlash.replace(/\/$/, "");
+}
+
+function buildQrcodeApiUrl() {
+  const baseUrl = (settings.qrcode_api_base_url || window.location.origin || "").replace(
+    /\/$/, ""
+  );
+  let pathPrefix = normalizePathPrefix(
+    settings.qrcode_api_path_prefix || DEFAULT_API_PATH_PREFIX
+  );
+
+  if (pathPrefix && baseUrl.toLowerCase().endsWith(pathPrefix.toLowerCase())) {
+    pathPrefix = "";
+  }
+
+  return `${baseUrl}${pathPrefix}/v1/api/discourse/qrcode/url`;
+}
+
+async function fetchJson(url, params = null) {
+  const requestUrl = new URL(url, window.location.origin);
+  if (params) {
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        requestUrl.searchParams.set(key, value);
+      }
+    });
+  }
+
+  const response = await window.fetch(requestUrl.toString(), {
+    method: "GET",
+    mode: "cors",
+    credentials: "omit",
+    cache: "no-store",
+    headers: {
+      Accept: "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    const responseText = await response.text();
+    const error = new Error(responseText || response.statusText || "request failed");
+    error.status = response.status;
+    error.statusText = response.statusText;
+    throw error;
+  }
+
+  return response.json();
+}
+
+function nextAnimationFrame() {
+  return new Promise((resolve) => {
+    window.requestAnimationFrame(() => resolve());
+  });
+}
+
+async function waitForContainerRender() {
+  await nextAnimationFrame();
+  await nextAnimationFrame();
+}
 
 function ensureQrcodeLibrary() {
   if (window.QRCode) {
@@ -30,25 +98,17 @@ function ensureQrcodeLibrary() {
   return qrcodeLibraryPromise;
 }
 
-function ensureWwLoginLibrary() {
-  if (window.WwLogin) {
-    return Promise.resolve();
-  }
-
-  if (wwLoginLibraryPromise) {
-    return wwLoginLibraryPromise;
-  }
-
-  wwLoginLibraryPromise = new Promise((resolve, reject) => {
-    const script = document.createElement("script");
-    script.src = "https://wwcdn.weixin.qq.com/node/wework/wwopen/js/wwLogin-1.2.0.js";
-    script.async = true;
-    script.onload = () => resolve();
-    script.onerror = () => reject(new Error("企业微信扫码库加载失败"));
-    document.head.appendChild(script);
+function buildWecomWidgetUrl(payload) {
+  const query = new URLSearchParams({
+    login_type: "CorpApp",
+    appid: String(payload?.appId || ""),
+    agentid: String(payload?.agentId || ""),
+    redirect_uri: String(payload?.redirectUri || ""),
+    state: String(payload?.state || ""),
+    lang: "zh",
   });
 
-  return wwLoginLibraryPromise;
+  return `https://login.work.weixin.qq.com/wwlogin/sso/login?${query.toString()}`;
 }
 
 export default class DiscourseQrcodeLoginComponent extends Component {
@@ -61,7 +121,14 @@ export default class DiscourseQrcodeLoginComponent extends Component {
 
   qrcodeInstances = {};
   wecomPollTimer = null;
+  wecomRenderFallbackTimer = null;
+  wecomWidgetFitTimer = null;
   wecomPollStartedAt = 0;
+  wecomWidgetEnabled = true;
+
+  get useWecomOfficialWidget() {
+    return !!settings.wecom_use_official_widget;
+  }
 
   get shouldRender() {
     if (typeof window === "undefined") {
@@ -88,37 +155,44 @@ export default class DiscourseQrcodeLoginComponent extends Component {
   @action
   teardown() {
     this.stopWecomPolling();
+    this.clearWecomRenderFallbackTimer();
+    this.clearWecomWidgetFitTimer();
     this.qrcodeInstances = {};
   }
 
   @action
   async loadQrcode(type, options = {}) {
     const { forceRefresh = false } = options;
+    this.qrcodeError = null;
+
+    if (type === "wecom") {
+      this.wecomStatusText = "正在加载企微二维码...";
+      this.stopWecomPolling();
+      this.clearWecomRenderFallbackTimer();
+      this.clearWecomWidgetFitTimer();
+    }
+
     if (!forceRefresh && this.qrcodePayloads[type]) {
+      await waitForContainerRender();
       await this.renderPayload(type, this.qrcodePayloads[type]);
       return;
     }
 
     this.isLoadingQrcode = true;
-    this.qrcodeError = null;
-    if (type === "wecom") {
-      this.wecomStatusText = "正在加载企微二维码...";
-      this.stopWecomPolling();
-    }
 
-    const baseUrl = (settings.qrcode_api_base_url || "").replace(/\/$/, "");
-    const apiUrl = `${baseUrl}/v1/api/discourse/qrcode/url`;
+    const apiUrl = buildQrcodeApiUrl();
 
     try {
       if (type === "wecom") {
-        await ensureWwLoginLibrary();
+        this.wecomWidgetEnabled = this.useWecomOfficialWidget;
+        if (!this.wecomWidgetEnabled) {
+          await ensureQrcodeLibrary();
+        }
       } else {
         await ensureQrcodeLibrary();
       }
 
-      const response = await ajax(apiUrl, {
-        data: { type },
-      });
+      const response = await fetchJson(apiUrl, { type });
 
       if (response?.code === 0 && response?.data) {
         const payload = response.data;
@@ -132,6 +206,9 @@ export default class DiscourseQrcodeLoginComponent extends Component {
           this.classinAvailable = true;
         }
 
+        // Switch out of loading state first, then wait one frame so QR containers exist in DOM.
+        this.isLoadingQrcode = false;
+        await waitForContainerRender();
         await this.renderPayload(type, payload);
       } else {
         this.qrcodeError = response?.message || "获取二维码失败，请稍后重试";
@@ -139,13 +216,15 @@ export default class DiscourseQrcodeLoginComponent extends Component {
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error("[QRCode] API error:", apiUrl, error);
-      const status = error?.jqXHR?.status || error?.status;
-      const msg = error?.jqXHR?.statusText || error?.responseText || error?.message;
+      const status = error?.status;
+      const msg = error?.statusText || error?.message;
       this.qrcodeError = status
         ? `获取二维码失败 (HTTP ${status})，请检查后端 API 是否可访问`
-        : `获取二维码失败: ${msg || "请检查 qrcode_api_base_url 设置"}`;
+        : `获取二维码失败: ${msg || "请检查 qrcode_api_base_url 与 qrcode_api_path_prefix 设置"}`;
     } finally {
-      this.isLoadingQrcode = false;
+      if (this.isLoadingQrcode) {
+        this.isLoadingQrcode = false;
+      }
     }
   }
 
@@ -188,11 +267,7 @@ export default class DiscourseQrcodeLoginComponent extends Component {
   }
 
   renderWecomQrcode(payload) {
-    const WwLogin = window.WwLogin;
-    if (!WwLogin) {
-      this.qrcodeError = "企业微信扫码库未加载完成，请稍后重试";
-      return;
-    }
+    const shouldUseWidget = this.wecomWidgetEnabled;
 
     const container = document.getElementById("qrcode-wecom");
     if (!container) {
@@ -201,19 +276,114 @@ export default class DiscourseQrcodeLoginComponent extends Component {
 
     container.innerHTML = "";
 
+    if (!shouldUseWidget) {
+      ensureQrcodeLibrary()
+        .then(() => {
+          this.renderQrcode("wecom", payload?.url);
+          this.wecomStatusText = "请使用企业微信扫码（兼容模式）";
+        })
+        .catch(() => {
+          this.qrcodeError = "企微二维码加载失败，请稍后重试";
+        });
+      return;
+    }
+
     try {
-      new WwLogin({
-        id: "qrcode-wecom",
-        appid: payload.appId,
-        agentid: payload.agentId,
-        redirect_uri: encodeURIComponent(payload.redirectUri),
+      const widgetUrl = buildWecomWidgetUrl(payload);
+      let redirectOrigin = "";
+      try {
+        redirectOrigin = new URL(payload.redirectUri).origin;
+      } catch (_error) {
+        redirectOrigin = "invalid-url";
+      }
+
+      // eslint-disable-next-line no-console
+      console.info("[WwLogin] init widget", {
+        implVersion: WECOM_WIDGET_IMPL_VERSION,
+        appId: payload.appId,
+        agentId: payload.agentId,
+        redirectUri: payload.redirectUri,
+        redirectOrigin,
         state: payload.state,
-        lang: "zh",
+        widgetUrl,
       });
+
+      const iframe = document.createElement("iframe");
+      iframe.src = widgetUrl;
+      iframe.width = "300";
+      iframe.height = "360";
+      iframe.scrolling = "no";
+      iframe.frameBorder = "0";
+      iframe.style.border = "0";
+      iframe.style.display = "block";
+      iframe.style.margin = "0 auto";
+      container.appendChild(iframe);
+
       this.wecomStatusText = "请使用企业微信扫描二维码";
+      this.scheduleWecomWidgetFit(container);
+
+      // If third-party iframe is blocked by CSP/network, fall back to a regular QR image.
+      this.wecomRenderFallbackTimer = window.setTimeout(async () => {
+        const hasWidget = !!container.querySelector("iframe, img, canvas");
+        if (hasWidget) {
+          return;
+        }
+
+        try {
+          await ensureQrcodeLibrary();
+          this.renderQrcode("wecom", payload?.url);
+          this.wecomStatusText = "请使用企业微信扫码（兼容模式）";
+          this.clearWecomWidgetFitTimer();
+        } catch (_error) {
+          this.qrcodeError = "企微二维码加载失败，请稍后重试";
+        }
+      }, WECOM_WIDGET_RENDER_TIMEOUT);
     } catch (error) {
       this.qrcodeError = `企微二维码加载失败: ${error?.message || "未知错误"}`;
     }
+  }
+
+  clearWecomRenderFallbackTimer() {
+    if (this.wecomRenderFallbackTimer) {
+      window.clearTimeout(this.wecomRenderFallbackTimer);
+      this.wecomRenderFallbackTimer = null;
+    }
+  }
+
+  clearWecomWidgetFitTimer() {
+    if (this.wecomWidgetFitTimer) {
+      window.clearTimeout(this.wecomWidgetFitTimer);
+      this.wecomWidgetFitTimer = null;
+    }
+  }
+
+  scheduleWecomWidgetFit(container, attempt = 0) {
+    this.clearWecomWidgetFitTimer();
+    this.wecomWidgetFitTimer = window.setTimeout(() => {
+      const iframe = container?.querySelector("iframe");
+      if (!iframe) {
+        if (attempt < 10) {
+          this.scheduleWecomWidgetFit(container, attempt + 1);
+        }
+        return;
+      }
+
+      const availableWidth = Math.max(container.clientWidth - 8, 220);
+      const widgetWidth = iframe.offsetWidth || 300;
+      const widgetHeight = iframe.offsetHeight || 360;
+      const scale = Math.min(0.9, availableWidth / widgetWidth);
+
+      iframe.style.width = `${widgetWidth}px`;
+      iframe.style.height = `${widgetHeight}px`;
+      iframe.style.maxWidth = "none";
+      iframe.style.transform = `scale(${scale})`;
+      iframe.style.transformOrigin = "top center";
+      iframe.style.margin = "0 auto";
+      iframe.style.display = "block";
+
+      container.style.minHeight = `${Math.ceil(widgetHeight * scale) + 20}px`;
+      container.style.paddingBottom = "8px";
+    }, 180);
   }
 
   startWecomPolling(payload) {
@@ -239,7 +409,7 @@ export default class DiscourseQrcodeLoginComponent extends Component {
       }
 
       try {
-        const response = await ajax(payload.statusUrl);
+        const response = await fetchJson(payload.statusUrl);
         const status = response?.data?.status || response?.status;
 
         if (status === "confirmed") {
@@ -274,7 +444,10 @@ export default class DiscourseQrcodeLoginComponent extends Component {
     this.selectedQrcodeType = type;
     if (type !== "wecom") {
       this.stopWecomPolling();
+      this.clearWecomRenderFallbackTimer();
+      this.clearWecomWidgetFitTimer();
     }
+    await waitForContainerRender();
     await this.loadQrcode(type);
   }
 

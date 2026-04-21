@@ -1,3 +1,11 @@
 qrcode_api_base_url:
   default: ""
   type: string
+
+qrcode_api_path_prefix:
+  default: "/eeo"
+  type: string
+
+wecom_use_official_widget:
+  default: false
+  type: bool

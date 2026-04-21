@@ -1,63 +1,71 @@
 /**
  * Discourse 二维码扫码登录组件样式
- * 集成到官方登录页右侧面板
  */
 
-// 容器 - 右侧固定宽度面板
-.qrcode-login-section {
+.qrcode-login-connector {
   width: 100%;
-  max-width: 280px;
-  margin-top: 0;
-  margin-left: auto;
-  padding: 0;
 }
 
-// 红色按钮行（并排两个）
+.qrcode-login-section {
+  width: min(100%, 364px);
+  margin: 0 auto;
+  padding: 12px;
+  border: 1px solid #e5e9f2;
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, #ffffff 0%, #f7f9fc 100%);
+  box-shadow: 0 18px 44px rgba(18, 52, 88, 0.08);
+}
+
 .qrcode-buttons-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 8px;
   width: 100%;
   margin-bottom: 12px;
-  margin-top: 0;
 }
 
-// 扫码操作按钮 - 红色背景风格
 .qrcode-action-btn {
-  flex: 1;
-  padding: 9px 10px;
-  background: #e74c3c;
-  border: 2px solid #e74c3c;
-  color: white;
-  border-radius: 4px;
+  min-height: 38px;
+  padding: 8px 12px;
+  border: 1px solid #d9e2ef;
+  background: #f5f7fb;
+  color: #50627a;
+  border-radius: 10px;
   cursor: pointer;
   font-size: 12px;
-  font-weight: 600;
-  transition: all 0.2s ease;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  transition: all 0.18s ease;
   outline: none;
 
   &:hover {
-    background: #d73728;
-    border-color: #d73728;
+    border-color: #ff7d5b;
+    background: #fff4ef;
+    color: #bb4a2a;
   }
 
   &.active {
-    background: #d73728;
-    border-color: #c1261f;
+    border-color: #f1633f;
+    background: linear-gradient(135deg, #f1633f 0%, #ff7b56 100%);
+    color: #fff;
+    box-shadow: 0 10px 22px rgba(241, 99, 63, 0.24);
   }
 }
 
-// 二维码预览区域
 .qrcode-preview-area {
   width: 100%;
-  min-height: 120px;
+  min-height: 346px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: #f8f9fa;
-  border: 1px solid #ecf0f1;
-  border-radius: 4px;
-  padding: 12px;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid #e7edf5;
+  background:
+    radial-gradient(circle at top, rgba(50, 125, 255, 0.06), transparent 42%),
+    #fbfcfe;
 }
 
 .qrcode-loading {
@@ -65,7 +73,7 @@
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  color: #7f8c8d;
+  color: #738399;
 
   .qrcode-spinner {
     width: 28px;
@@ -88,11 +96,12 @@
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  padding: 15px;
-  background: #fef5f5;
-  border: 1px solid #f5a6a6;
-  border-radius: 6px;
-  color: #d73728;
+  width: 100%;
+  padding: 18px 16px;
+  background: #fff4f3;
+  border: 1px solid #ffc7bd;
+  border-radius: 12px;
+  color: #cf4c35;
   text-align: center;
 
   .qrcode-error-text {
@@ -102,17 +111,17 @@
   }
 
   .qrcode-retry-btn {
-    padding: 6px 12px;
-    background: #e74c3c;
+    padding: 8px 14px;
+    background: #f1633f;
     color: white;
     border: none;
-    border-radius: 4px;
+    border-radius: 8px;
     cursor: pointer;
     font-size: 11px;
-    font-weight: 500;
+    font-weight: 700;
 
     &:hover {
-      background: #d73728;
+      background: #da5432;
     }
   }
 }
@@ -121,7 +130,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   width: 100%;
 }
 
@@ -130,66 +139,82 @@
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  background: white;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  padding: 8px;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #dfe7f2;
+  border-radius: 16px;
+  padding: 14px;
   width: 100%;
-  min-height: 212px;
+  min-height: 302px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
 
   iframe {
-    max-width: 100%;
+    width: auto;
+    min-height: 286px;
+    border: 0;
+    display: block;
   }
 
   canvas,
   img {
-    max-width: 120px;
-    max-height: 120px;
+    width: auto !important;
+    height: auto !important;
+    max-width: 100% !important;
+    max-height: 252px !important;
     display: block;
+    margin: 0 auto;
   }
 }
 
 .qrcode-status-text {
   font-size: 12px;
-  color: #666;
-  line-height: 1.5;
+  color: #607086;
+  line-height: 1.6;
   text-align: center;
+  min-height: 20px;
 }
 
 .qrcode-placeholder {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 20px 12px;
-  background: white;
-  border: 1px dashed #e0e0e0;
-  border-radius: 4px;
+  gap: 10px;
+  width: 100%;
+  min-height: 302px;
+  padding: 28px 18px;
+  background: #fff;
+  border: 1px dashed #cad6e5;
+  border-radius: 16px;
   text-align: center;
 
   .qrcode-placeholder-title {
-    font-size: 12px;
-    font-weight: 600;
-    color: #666;
+    font-size: 14px;
+    font-weight: 700;
+    color: #4d5c70;
     margin: 0;
   }
 
   .qrcode-placeholder-desc {
-    font-size: 11px;
-    color: #999;
+    font-size: 12px;
+    color: #8492a6;
     margin: 0;
   }
 }
 
-.qrcode-login-connector {
-  width: 100%;
+.qrcode-box .ww_login_with_qrcode,
+.qrcode-box .wwlogin-iframe,
+.qrcode-box #loginQrCode {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow: hidden;
 }
 
 @media (max-width: 600px) {
   .qrcode-login-section {
     max-width: 100%;
-    margin-top: 12px;
-    margin-left: 0;
+    padding: 10px;
+    border-radius: 14px;
+    box-shadow: none;
   }
 
   .qrcode-buttons-row {
@@ -198,34 +223,39 @@
   }
 
   .qrcode-action-btn {
+    min-height: 36px;
     padding: 8px 10px;
     font-size: 12px;
   }
 
   .qrcode-preview-area {
-    min-height: 100px;
+    min-height: 304px;
     padding: 10px;
   }
 
   .qrcode-box {
-    min-height: 188px;
+    min-height: 274px;
+
+    iframe {
+      min-height: 258px;
+    }
 
     canvas,
     img {
-      max-width: 100px;
-      max-height: 100px;
+      max-height: 220px !important;
     }
   }
 
   .qrcode-placeholder {
-    padding: 15px 10px;
+    min-height: 274px;
+    padding: 20px 12px;
 
     .qrcode-placeholder-title {
-      font-size: 11px;
+      font-size: 12px;
     }
 
     .qrcode-placeholder-desc {
-      font-size: 10px;
+      font-size: 11px;
     }
   }
 }

@@ -1,8 +1,9 @@
 {
-  "name": "Discourse Login QR",
+  "name": "discourse-login-qr",
+  "description": "【EEO】登录页企微和Classin二维码扫码登录插件",
   "component": true,
   "about_url": "https://github.com/miaoxueliang/discourse-login-qr",
-  "license_url": "https://github.com/miaoxueliang/discourse-login-qr/blob/main/LICENSE",
+  "license_url": "https://opensource.org/licenses/MIT",
   "theme_version": "1.0.1",
-  "authors": "EEO Development Team"
+  "authors": "xueliang.miao@eeoa.com"
 }

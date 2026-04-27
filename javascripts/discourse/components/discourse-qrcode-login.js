@@ -381,8 +381,10 @@ export default class DiscourseQrcodeLoginComponent extends Component {
       iframe.style.margin = "0 auto";
       iframe.style.display = "block";
 
-      container.style.minHeight = `${Math.ceil(widgetHeight * scale) + 20}px`;
-      container.style.paddingBottom = "8px";
+      // transform: scale() 不改变 layout box，容器高度必须 >= 原始 widgetHeight
+      // 否则 overflow:hidden 会裁切 iframe 底部；使用原始高度保证完整显示
+      container.style.minHeight = `${widgetHeight + 8}px`;
+      container.style.paddingBottom = "0";
     }, 180);
   }
 

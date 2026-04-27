@@ -38,6 +38,15 @@
         </div>
       {{else if this.qrcodeError}}
         <div class="qrcode-error-box">
+          <div class="qrcode-error-icon">
+            {{!-- 刷新图标 --}}
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M20 12a8 8 0 0 1-13.6 5.7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              <path d="M4 12a8 8 0 0 1 13.6-5.7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              <polyline points="17.5 6.5 17.5 2.5 21.5 6.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              <polyline points="6.5 17.5 6.5 21.5 2.5 17.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
           <p class="qrcode-error-text">{{this.qrcodeError}}</p>
           <button {{on "click" this.retryLoadQrcode}} class="qrcode-retry-btn" type="button">
             刷新二维码
@@ -61,6 +70,7 @@
           {{#if this.classinAvailable}}
             <div class="qrcode-box-wrapper">
               <div id="qrcode-classin" class="qrcode-box"></div>
+              <div class="qrcode-status-text {{if (eq this.classinStatusText '请使用 ClassIn App 扫描二维码') '' 'qrcode-status-text--active'}}">{{this.classinStatusText}}</div>
               <div class="qrcode-instruction">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                   <rect x="5" y="2" width="14" height="20" rx="3" stroke="currentColor" stroke-width="1.8"/>

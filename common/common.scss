@@ -185,36 +185,68 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  justify-content: center;
+  gap: 8px;
   width: 100%;
-  padding: 20px 16px;
-  background: #fff5f4;
-  border: 1px solid #ffd4cc;
+  // 与正常二维码等高，避免切换时布局跳动
+  min-height: 208px;
+  padding: 24px 16px;
+  background: #f7f8fa;
+  border: 1.5px dashed #dde3ec;
   border-radius: 10px;
-  color: #cb2929;
   text-align: center;
+  box-sizing: border-box;
+
+  .qrcode-error-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: #eef0f3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #86909c;
+    flex-shrink: 0;
+    margin-bottom: 2px;
+  }
 
   .qrcode-error-text {
     margin: 0;
-    font-size: 12px;
+    font-size: 13px;
+    color: #4e5969;
     line-height: 1.6;
   }
 
   .qrcode-retry-btn {
-    padding: 7px 22px;
-    background: #cb2929;
+    margin-top: 6px;
+    padding: 8px 26px;
+    background: #1677ff;
     color: #ffffff;
     border: none;
     border-radius: 6px;
     cursor: pointer;
-    font-size: 12px;
-    font-weight: 600;
-    transition: background 0.15s ease;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    transition: background 0.15s ease, opacity 0.15s ease;
 
     &:hover {
-      background: #b52222;
+      opacity: 0.86;
+    }
+
+    &:active {
+      opacity: 0.72;
     }
   }
+}
+
+// 品牌色按钮：根据当前激活 Tab 切换
+.qrcode-login-section[data-active-type="wecom"] .qrcode-retry-btn {
+  background: #1677ff;
+}
+
+.qrcode-login-section[data-active-type="classin"] .qrcode-retry-btn {
+  background: #ff6635;
 }
 
 // 鈹€鈹€鈹€ 浜岀淮鐮佸尯鍩?鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
@@ -267,13 +299,27 @@
   }
 }
 
-// 鐘舵€佹彁绀烘枃瀛楋紙鎵爜鎴愬姛 / 瓒呮椂绛夊姩鎬佷俊鎭級
+// 状态提示文字（扫码成功 / 超时等动态信息）
 .qrcode-status-text {
   font-size: 12px;
   color: #86909c;
   line-height: 1.6;
   text-align: center;
   min-height: 18px;
+  transition: color 0.2s ease;
+
+  // 「已扫码，请确认」等积极中间态用品牌色提示
+  &--active {
+    font-weight: 500;
+  }
+}
+
+.qrcode-login-section[data-active-type="wecom"] .qrcode-status-text--active {
+  color: #1677ff;
+}
+
+.qrcode-login-section[data-active-type="classin"] .qrcode-status-text--active {
+  color: #ff6635;
 }
 
 // 鎸囧紩璇存槑琛岋紙鎵嬫満鍥炬爣 + 闈欐€佸紩瀵兼枃瀛楋級

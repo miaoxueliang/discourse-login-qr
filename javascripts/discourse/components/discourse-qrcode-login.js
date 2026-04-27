@@ -368,23 +368,29 @@ export default class DiscourseQrcodeLoginComponent extends Component {
         return;
       }
 
-      const availableWidth = Math.max(container.clientWidth - 8, 220);
-      const widgetWidth = iframe.offsetWidth || 300;
-      const widgetHeight = iframe.offsetHeight || 360;
-      const scale = Math.min(0.9, availableWidth / widgetWidth);
+      // 企微官方 widget 原始尺寸
+      const WIDGET_W = 300;
+      const WIDGET_H = 360;
 
-      iframe.style.width = `${widgetWidth}px`;
-      iframe.style.height = `${widgetHeight}px`;
+      // 容器可用宽度（减去 padding 8px * 2 = 16px）
+      const availableWidth = Math.max((container.clientWidth || 308) - 16, 200);
+
+      // 等比缩放：如果容器比 widget 窄就缩小，否则保持原始尺寸（最大 1.0 倍）
+      const scale = Math.min(1.0, availableWidth / WIDGET_W);
+      const fitW = Math.floor(WIDGET_W * scale);
+      const fitH = Math.floor(WIDGET_H * scale);
+
+      // 直接设置 iframe 的 width/height，让 layout box 就是缩放后的尺寸
+      // 避免 transform:scale 导致 layout box 仍为原始尺寸而被 overflow:hidden 裁切
+      iframe.style.width = `${fitW}px`;
+      iframe.style.height = `${fitH}px`;
       iframe.style.maxWidth = "none";
-      iframe.style.transform = `scale(${scale})`;
-      iframe.style.transformOrigin = "top center";
+      iframe.style.transform = "none";
       iframe.style.margin = "0 auto";
       iframe.style.display = "block";
 
-      // transform: scale() 不改变 layout box，容器高度必须 >= 原始 widgetHeight
-      // 否则 overflow:hidden 会裁切 iframe 底部；使用原始高度保证完整显示
-      container.style.minHeight = `${widgetHeight + 8}px`;
-      container.style.paddingBottom = "0";
+      // 容器高度跟随 iframe 实际高度
+      container.style.minHeight = `${fitH}px`;
     }, 180);
   }
 

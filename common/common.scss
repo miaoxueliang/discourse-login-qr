@@ -1,23 +1,23 @@
-/**
- * Discourse 二维码扫码登录组件样式 — v2
- * 设计参考：ClassIn (eeo.cn/cn) + 今日头条 / 腾讯 / 阿里云 扫码登录交互规范
+﻿/**
+ * Discourse 浜岀淮鐮佹壂鐮佺櫥褰曠粍浠舵牱寮?鈥?v2
+ * 璁捐鍙傝€冿細ClassIn (eeo.cn/cn) + 浠婃棩澶存潯 / 鑵捐 / 闃块噷浜?鎵爜鐧诲綍浜や簰瑙勮寖
  *
- * 色彩系统
- *   WeCom 蓝   #1677FF  — 企业微信品牌色
- *   ClassIn 橙 #FF6635  — ClassIn / EEO 品牌色
- *   文字主色   #1D2129  — Arco Design dark
- *   文字次色   #86909C  — Arco Design secondary
- *   边框       #E8EDF4
- *   背景浅灰   #F7F8FA
+ * 鑹插僵绯荤粺
+ *   WeCom 钃?  #1677FF  鈥?浼佷笟寰俊鍝佺墝鑹?
+ *   ClassIn 姗?#FF6635  鈥?ClassIn / EEO 鍝佺墝鑹?
+ *   鏂囧瓧涓昏壊   #1D2129  鈥?Arco Design dark
+ *   鏂囧瓧娆¤壊   #86909C  鈥?Arco Design secondary
+ *   杈规       #E8EDF4
+ *   鑳屾櫙娴呯伆   #F7F8FA
  */
 
-// ─── 连接器外层 ────────────────────────────────────────────────
+// 鈹€鈹€鈹€ 杩炴帴鍣ㄥ灞?鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 .qrcode-login-connector {
   width: 100%;
   margin-top: 4px;
 }
 
-// 扫码登录分隔线（connector 层注入）
+// 鎵爜鐧诲綍鍒嗛殧绾匡紙connector 灞傛敞鍏ワ級
 .qrcode-or-divider {
   display: flex;
   align-items: center;
@@ -42,21 +42,24 @@
   }
 }
 
-// ─── 主卡片 ────────────────────────────────────────────────────
+// 鈹€鈹€鈹€ 涓诲崱鐗?鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 .qrcode-login-section {
   width: min(100%, 340px);
   margin: 0 auto;
   background: #ffffff;
   border: 1px solid #e8edf4;
   border-radius: 12px;
-  overflow: hidden;
+  // overflow:hidden 浼氬湪 transform:scale 鏃惰鍒?layout box 瓒呭嚭閮ㄥ垎
+  // 鏀圭敤 clip-path 淇濅綇鍦嗚瑙嗚锛屽悓鏃朵笉鍙備笌 overflow 瑁佸垏
+  overflow: visible;
+  clip-path: inset(0 round 12px);
   box-shadow:
     0 2px 8px rgba(0, 0, 0, 0.06),
     0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
-// ─── 标签页（Tab switcher）─────────────────────────────────────
-// 样式灵感：字节跳动/今日头条 登录页下划线 Tab
+// 鈹€鈹€鈹€ 鏍囩椤碉紙Tab switcher锛夆攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+// 鏍峰紡鐏垫劅锛氬瓧鑺傝烦鍔?浠婃棩澶存潯 鐧诲綍椤典笅鍒掔嚎 Tab
 .qrcode-tabs {
   display: flex;
   background: #f7f8fa;
@@ -81,7 +84,7 @@
   outline: none;
   -webkit-tap-highlight-color: transparent;
 
-  // 下划线指示器
+  // 涓嬪垝绾挎寚绀哄櫒
   &::after {
     content: "";
     position: absolute;
@@ -110,18 +113,18 @@
     }
   }
 
-  // 企业微信 Tab 激活色：WeCom 蓝
+  // 浼佷笟寰俊 Tab 婵€娲昏壊锛歐eCom 钃?
   &[data-type="wecom"].active::after {
     background: #1677ff;
   }
 
-  // ClassIn Tab 激活色：ClassIn 橙
+  // ClassIn Tab 婵€娲昏壊锛欳lassIn 姗?
   &[data-type="classin"].active::after {
     background: #ff6635;
   }
 }
 
-// 品牌徽章（Tab 内小图标）
+// 鍝佺墝寰界珷锛圱ab 鍐呭皬鍥炬爣锛?
 .qrcode-tab-badge {
   display: inline-flex;
   align-items: center;
@@ -144,22 +147,18 @@
   }
 }
 
-// ─── 主体内容区 ────────────────────────────────────────────────
+// 鈹€鈹€鈹€ 涓讳綋鍐呭鍖?鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 .qrcode-body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;  // 不压缩子元素高度
+  justify-content: flex-start;
   padding: 16px;
-  min-height: 284px;
+  // 楂樺害鐢卞唴瀹硅嚜鍔ㄦ媺浼革紝涓嶈鍥哄畾楂樺害闃叉瑁佸垏
+  min-height: 0;
 }
 
-// 企微官方 widget iframe 高度约 360px，撑开 body
-.qrcode-login-section[data-active-type="wecom"] .qrcode-body {
-  min-height: 400px;
-}
-
-// ─── 加载状态 ──────────────────────────────────────────────────
+// 鈹€鈹€鈹€ 鍔犺浇鐘舵€?鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 .qrcode-loading {
   display: flex;
   flex-direction: column;
@@ -184,7 +183,7 @@
   }
 }
 
-// ─── 错误状态 ──────────────────────────────────────────────────
+// 鈹€鈹€鈹€ 閿欒鐘舵€?鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 .qrcode-error-box {
   display: flex;
   flex-direction: column;
@@ -221,7 +220,7 @@
   }
 }
 
-// ─── 二维码区域 ────────────────────────────────────────────────
+// 鈹€鈹€鈹€ 浜岀淮鐮佸尯鍩?鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 .qrcode-box-wrapper {
   display: flex;
   flex-direction: column;
@@ -233,22 +232,27 @@
 .qrcode-box {
   display: flex;
   justify-content: center;
-  align-items: flex-start;  // 顶部对齐，防止 flex 压缩 iframe
+  align-items: flex-start;
   flex-direction: column;
-  overflow: visible;        // 不裁切 iframe，JS 动态调整高度
+  // JS 鎶?iframe 鐨?width/height 鐩存帴缂╁皬鍒板鍣ㄥ疄闄呭搴?
+  // layout box 灏辨槸缂╁皬鍚庣殑灏哄锛宱verflow:hidden 涓嶄細瑁佸垏
+  overflow: hidden;
   background: #ffffff;
   border: 1.5px solid #e8edf4;
   border-radius: 10px;
   padding: 8px;
   width: 100%;
-  min-height: 300px;        // 默认预留 iframe 原始高度
   box-sizing: border-box;
+  // 楂樺害鐢?iframe 鍐呭鑷姩鎷変几
+  min-height: 0;
 
   iframe {
-    width: auto;
-    min-height: 300px;
+    // 瀹藉害/楂樺害鐢?JS 鐩存帴璁剧疆 px 鍊硷紝涓嶇敤 transform
     border: 0;
     display: block;
+    margin: 0 auto;
+    // 闄愬埗鏈€澶у搴︿笉瓒呰繃瀹瑰櫒
+    max-width: 100%;
   }
 
   canvas,
@@ -262,7 +266,7 @@
   }
 }
 
-// 状态提示文字（扫码成功 / 超时等动态信息）
+// 鐘舵€佹彁绀烘枃瀛楋紙鎵爜鎴愬姛 / 瓒呮椂绛夊姩鎬佷俊鎭級
 .qrcode-status-text {
   font-size: 12px;
   color: #86909c;
@@ -271,7 +275,7 @@
   min-height: 18px;
 }
 
-// 指引说明行（手机图标 + 静态引导文字）
+// 鎸囧紩璇存槑琛岋紙鎵嬫満鍥炬爣 + 闈欐€佸紩瀵兼枃瀛楋級
 .qrcode-instruction {
   display: flex;
   align-items: center;
@@ -285,7 +289,7 @@
   }
 }
 
-// ─── 占位符（功能未开放时） ────────────────────────────────────
+// 鈹€鈹€鈹€ 鍗犱綅绗︼紙鍔熻兘鏈紑鏀炬椂锛?鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 .qrcode-placeholder {
   display: flex;
   flex-direction: column;
@@ -314,6 +318,7 @@
   }
 }
 
+// 鈹€鈹€鈹€ WeCom / ClassIn iframe 閫傞厤 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 .qrcode-box .ww_login_with_qrcode,
 .qrcode-box .wwlogin-iframe,
 .qrcode-box #loginQrCode {
@@ -322,21 +327,13 @@
   overflow: hidden;
 }
 
-// ─── WeCom / ClassIn iframe 适配 ──────────────────────────────
-.qrcode-box .ww_login_with_qrcode,
-.qrcode-box .wwlogin-iframe,
-.qrcode-box #loginQrCode {
-  width: 100% !important;
-  max-width: 100% !important;
-  overflow: hidden;
-}
-
-// ─── 响应式（窄屏） ───────────────────────────────────────────
+// 鈹€鈹€鈹€ 鍝嶅簲寮忥紙绐勫睆锛?鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 @media (max-width: 600px) {
   .qrcode-login-section {
     max-width: 100%;
     border-radius: 10px;
     box-shadow: none;
+    clip-path: inset(0 round 10px);
   }
 
   .qrcode-tab {
@@ -345,17 +342,11 @@
   }
 
   .qrcode-body {
-    padding: 12px;
-    min-height: 252px;
+    padding: 10px;
   }
 
   .qrcode-box {
-    min-height: 260px;
     padding: 6px;
-
-    iframe {
-      min-height: 260px;
-    }
 
     canvas,
     img {
@@ -364,7 +355,7 @@
   }
 
   .qrcode-placeholder {
-    min-height: 214px;
+    min-height: 200px;
     padding: 24px 14px;
 
     .qrcode-placeholder-title {
@@ -376,3 +367,4 @@
     }
   }
 }
+

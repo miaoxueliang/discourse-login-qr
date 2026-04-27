@@ -1,31 +1,36 @@
 {{#if this.shouldRender}}
   <div
     class="qrcode-login-section"
+    data-active-type={{this.selectedQrcodeType}}
     {{did-insert this.setup}}
     {{will-destroy this.teardown}}
   >
-    {{!-- 两个扫码按钮，并排显示 --}}
-    <div class="qrcode-buttons-row">
+    {{!-- Tab 标签切换（下划线指示器风格） --}}
+    <div class="qrcode-tabs">
       <button
-        class="qrcode-action-btn {{if (eq this.selectedQrcodeType 'wecom') 'active'}}"
+        class="qrcode-tab {{if (eq this.selectedQrcodeType 'wecom') 'active'}}"
+        data-type="wecom"
         {{on "click" (fn this.selectQrcodeType "wecom")}}
         title="企业微信扫码登录"
         type="button"
       >
-        企微扫码
+        <span class="qrcode-tab-badge qrcode-tab-badge--wecom">企</span>
+        企业微信
       </button>
       <button
-        class="qrcode-action-btn {{if (eq this.selectedQrcodeType 'classin') 'active'}}"
+        class="qrcode-tab {{if (eq this.selectedQrcodeType 'classin') 'active'}}"
+        data-type="classin"
         {{on "click" (fn this.selectQrcodeType "classin")}}
-        title="Classin App 扫码登录"
+        title="ClassIn App 扫码登录"
         type="button"
       >
-        Classin扫码
+        <span class="qrcode-tab-badge qrcode-tab-badge--classin">C</span>
+        ClassIn
       </button>
     </div>
 
-    {{!-- 加载/错误/二维码预览区 --}}
-    <div class="qrcode-preview-area">
+    {{!-- 主体内容区：加载 / 错误 / 二维码 --}}
+    <div class="qrcode-body">
       {{#if this.isLoadingQrcode}}
         <div class="qrcode-loading">
           <div class="qrcode-spinner"></div>
@@ -35,25 +40,39 @@
         <div class="qrcode-error-box">
           <p class="qrcode-error-text">{{this.qrcodeError}}</p>
           <button {{on "click" this.retryLoadQrcode}} class="qrcode-retry-btn" type="button">
-            重试
+            刷新二维码
           </button>
         </div>
       {{else}}
-        {{!-- 二维码显示 --}}
         {{#if (eq this.selectedQrcodeType 'wecom')}}
           <div class="qrcode-box-wrapper">
             <div id="qrcode-wecom" class="qrcode-box"></div>
             <div class="qrcode-status-text">{{this.wecomStatusText}}</div>
+            <div class="qrcode-instruction">
+              {{!-- 手机扫码图标 --}}
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <rect x="5" y="2" width="14" height="20" rx="3" stroke="currentColor" stroke-width="1.8"/>
+                <circle cx="12" cy="17.5" r="1" fill="currentColor"/>
+              </svg>
+              <span>打开企业微信 App 扫码</span>
+            </div>
           </div>
         {{else if (eq this.selectedQrcodeType 'classin')}}
           {{#if this.classinAvailable}}
             <div class="qrcode-box-wrapper">
               <div id="qrcode-classin" class="qrcode-box"></div>
+              <div class="qrcode-instruction">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <rect x="5" y="2" width="14" height="20" rx="3" stroke="currentColor" stroke-width="1.8"/>
+                  <circle cx="12" cy="17.5" r="1" fill="currentColor"/>
+                </svg>
+                <span>打开 ClassIn App 扫码</span>
+              </div>
             </div>
           {{else}}
             <div class="qrcode-placeholder">
               <div class="qrcode-placeholder-title">功能即将上线</div>
-              <div class="qrcode-placeholder-desc">Classin 扫码登录功能开发中</div>
+              <div class="qrcode-placeholder-desc">ClassIn 扫码登录功能开发中</div>
             </div>
           {{/if}}
         {{/if}}

@@ -1,87 +1,175 @@
 /**
- * Discourse 二维码扫码登录组件样式
+ * Discourse 二维码扫码登录组件样式 — v2
+ * 设计参考：ClassIn (eeo.cn/cn) + 今日头条 / 腾讯 / 阿里云 扫码登录交互规范
+ *
+ * 色彩系统
+ *   WeCom 蓝   #1677FF  — 企业微信品牌色
+ *   ClassIn 橙 #FF6635  — ClassIn / EEO 品牌色
+ *   文字主色   #1D2129  — Arco Design dark
+ *   文字次色   #86909C  — Arco Design secondary
+ *   边框       #E8EDF4
+ *   背景浅灰   #F7F8FA
  */
 
+// ─── 连接器外层 ────────────────────────────────────────────────
 .qrcode-login-connector {
   width: 100%;
+  margin-top: 4px;
 }
 
+// 扫码登录分隔线（connector 层注入）
+.qrcode-or-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0 10px;
+  color: #c0c8d4;
+  font-size: 11px;
+  user-select: none;
+
+  &::before,
+  &::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: #e8edf4;
+  }
+
+  span {
+    white-space: nowrap;
+    letter-spacing: 0.04em;
+    color: #adb5c2;
+  }
+}
+
+// ─── 主卡片 ────────────────────────────────────────────────────
 .qrcode-login-section {
-  width: min(100%, 364px);
+  width: min(100%, 340px);
   margin: 0 auto;
-  padding: 12px;
-  border: 1px solid #e5e9f2;
-  border-radius: 18px;
-  background:
-    linear-gradient(180deg, #ffffff 0%, #f7f9fc 100%);
-  box-shadow: 0 18px 44px rgba(18, 52, 88, 0.08);
+  background: #ffffff;
+  border: 1px solid #e8edf4;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.06),
+    0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
-.qrcode-buttons-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  width: 100%;
-  margin-bottom: 12px;
+// ─── 标签页（Tab switcher）─────────────────────────────────────
+// 样式灵感：字节跳动/今日头条 登录页下划线 Tab
+.qrcode-tabs {
+  display: flex;
+  background: #f7f8fa;
+  border-bottom: 1px solid #e8edf4;
 }
 
-.qrcode-action-btn {
-  min-height: 38px;
-  padding: 8px 12px;
-  border: 1px solid #d9e2ef;
-  background: #f5f7fb;
-  color: #50627a;
-  border-radius: 10px;
+.qrcode-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 11px 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: #86909c;
+  background: transparent;
+  border: none;
   cursor: pointer;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.01em;
-  transition: all 0.18s ease;
+  position: relative;
+  transition: color 0.18s ease;
   outline: none;
+  -webkit-tap-highlight-color: transparent;
 
-  &:hover {
-    border-color: #ff7d5b;
-    background: #fff4ef;
-    color: #bb4a2a;
+  // 下划线指示器
+  &::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 22%;
+    right: 22%;
+    height: 2px;
+    border-radius: 2px 2px 0 0;
+    background: transparent;
+    opacity: 0;
+    transition: opacity 0.18s ease;
+  }
+
+  &:hover:not(.active) {
+    color: #4e5969;
+    background: rgba(0, 0, 0, 0.025);
   }
 
   &.active {
-    border-color: #f1633f;
-    background: linear-gradient(135deg, #f1633f 0%, #ff7b56 100%);
-    color: #fff;
-    box-shadow: 0 10px 22px rgba(241, 99, 63, 0.24);
+    color: #1d2129;
+    font-weight: 600;
+    background: #ffffff;
+
+    &::after {
+      opacity: 1;
+    }
+  }
+
+  // 企业微信 Tab 激活色：WeCom 蓝
+  &[data-type="wecom"].active::after {
+    background: #1677ff;
+  }
+
+  // ClassIn Tab 激活色：ClassIn 橙
+  &[data-type="classin"].active::after {
+    background: #ff6635;
   }
 }
 
-.qrcode-preview-area {
-  width: 100%;
-  min-height: 346px;
+// 品牌徽章（Tab 内小图标）
+.qrcode-tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  font-size: 9px;
+  font-weight: 800;
+  color: #ffffff;
+  flex-shrink: 0;
+  letter-spacing: -0.2px;
+
+  &--wecom {
+    background: #1677ff;
+  }
+
+  &--classin {
+    background: #ff6635;
+  }
+}
+
+// ─── 主体内容区 ────────────────────────────────────────────────
+.qrcode-body {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 14px;
-  border-radius: 14px;
-  border: 1px solid #e7edf5;
-  background:
-    radial-gradient(circle at top, rgba(50, 125, 255, 0.06), transparent 42%),
-    #fbfcfe;
+  padding: 18px 16px 16px;
+  min-height: 284px;
 }
 
+// ─── 加载状态 ──────────────────────────────────────────────────
 .qrcode-loading {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  color: #738399;
+  color: #86909c;
+  font-size: 12px;
 
   .qrcode-spinner {
-    width: 28px;
-    height: 28px;
-    border: 3px solid #ecf0f1;
-    border-top-color: #3498db;
+    width: 26px;
+    height: 26px;
+    border: 2.5px solid #e5e9f0;
+    border-top-color: #1677ff;
     border-radius: 50%;
-    animation: qrcode-spin 0.8s linear infinite;
+    animation: qrcode-spin 0.7s linear infinite;
   }
 
   @keyframes qrcode-spin {
@@ -91,46 +179,49 @@
   }
 }
 
+// ─── 错误状态 ──────────────────────────────────────────────────
 .qrcode-error-box {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   width: 100%;
-  padding: 18px 16px;
-  background: #fff4f3;
-  border: 1px solid #ffc7bd;
-  border-radius: 12px;
-  color: #cf4c35;
+  padding: 20px 16px;
+  background: #fff5f4;
+  border: 1px solid #ffd4cc;
+  border-radius: 10px;
+  color: #cb2929;
   text-align: center;
 
   .qrcode-error-text {
     margin: 0;
     font-size: 12px;
-    line-height: 1.5;
+    line-height: 1.6;
   }
 
   .qrcode-retry-btn {
-    padding: 8px 14px;
-    background: #f1633f;
-    color: white;
+    padding: 7px 22px;
+    background: #cb2929;
+    color: #ffffff;
     border: none;
-    border-radius: 8px;
+    border-radius: 6px;
     cursor: pointer;
-    font-size: 11px;
-    font-weight: 700;
+    font-size: 12px;
+    font-weight: 600;
+    transition: background 0.15s ease;
 
     &:hover {
-      background: #da5432;
+      background: #b52222;
     }
   }
 }
 
+// ─── 二维码区域 ────────────────────────────────────────────────
 .qrcode-box-wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   width: 100%;
 }
 
@@ -140,17 +231,16 @@
   align-items: center;
   flex-direction: column;
   overflow: hidden;
-  background: #fff;
-  border: 1px solid #dfe7f2;
-  border-radius: 16px;
-  padding: 14px;
+  background: #ffffff;
+  border: 1.5px solid #e8edf4;
+  border-radius: 10px;
+  padding: 12px;
   width: 100%;
-  min-height: 302px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  min-height: 246px;
 
   iframe {
     width: auto;
-    min-height: 286px;
+    min-height: 228px;
     border: 0;
     display: block;
   }
@@ -160,43 +250,60 @@
     width: auto !important;
     height: auto !important;
     max-width: 100% !important;
-    max-height: 252px !important;
+    max-height: 218px !important;
     display: block;
     margin: 0 auto;
   }
 }
 
+// 状态提示文字（扫码成功 / 超时等动态信息）
 .qrcode-status-text {
   font-size: 12px;
-  color: #607086;
+  color: #86909c;
   line-height: 1.6;
   text-align: center;
-  min-height: 20px;
+  min-height: 18px;
 }
 
+// 指引说明行（手机图标 + 静态引导文字）
+.qrcode-instruction {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: #adb5c2;
+
+  svg {
+    flex-shrink: 0;
+    opacity: 0.75;
+  }
+}
+
+// ─── 占位符（功能未开放时） ────────────────────────────────────
 .qrcode-placeholder {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  justify-content: center;
+  gap: 8px;
   width: 100%;
-  min-height: 302px;
-  padding: 28px 18px;
-  background: #fff;
-  border: 1px dashed #cad6e5;
-  border-radius: 16px;
+  min-height: 246px;
+  padding: 32px 20px;
+  background: #f9fafb;
+  border: 1.5px dashed #dde3ec;
+  border-radius: 10px;
   text-align: center;
 
   .qrcode-placeholder-title {
     font-size: 14px;
-    font-weight: 700;
-    color: #4d5c70;
+    font-weight: 600;
+    color: #1d2129;
     margin: 0;
   }
 
   .qrcode-placeholder-desc {
     font-size: 12px;
-    color: #8492a6;
+    color: #86909c;
     margin: 0;
   }
 }
@@ -209,49 +316,53 @@
   overflow: hidden;
 }
 
+// ─── WeCom / ClassIn iframe 适配 ──────────────────────────────
+.qrcode-box .ww_login_with_qrcode,
+.qrcode-box .wwlogin-iframe,
+.qrcode-box #loginQrCode {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow: hidden;
+}
+
+// ─── 响应式（窄屏） ───────────────────────────────────────────
 @media (max-width: 600px) {
   .qrcode-login-section {
     max-width: 100%;
-    padding: 10px;
-    border-radius: 14px;
+    border-radius: 10px;
     box-shadow: none;
   }
 
-  .qrcode-buttons-row {
-    gap: 6px;
-    margin-bottom: 10px;
-  }
-
-  .qrcode-action-btn {
-    min-height: 36px;
-    padding: 8px 10px;
+  .qrcode-tab {
+    padding: 10px 0;
     font-size: 12px;
   }
 
-  .qrcode-preview-area {
-    min-height: 304px;
-    padding: 10px;
+  .qrcode-body {
+    padding: 12px;
+    min-height: 252px;
   }
 
   .qrcode-box {
-    min-height: 274px;
+    min-height: 214px;
+    padding: 10px;
 
     iframe {
-      min-height: 258px;
+      min-height: 196px;
     }
 
     canvas,
     img {
-      max-height: 220px !important;
+      max-height: 192px !important;
     }
   }
 
   .qrcode-placeholder {
-    min-height: 274px;
-    padding: 20px 12px;
+    min-height: 214px;
+    padding: 24px 14px;
 
     .qrcode-placeholder-title {
-      font-size: 12px;
+      font-size: 13px;
     }
 
     .qrcode-placeholder-desc {

@@ -487,6 +487,11 @@ export default class DiscourseQrcodeLoginComponent extends Component {
           this.qrcodePayloads = { ...this.qrcodePayloads, wecom: null };
           this.qrcodeError = "二维码已过期，请重新生成";
           this.wecomStatusText = "二维码已过期";
+        } else if (status === "error" || status === "cancelled") {
+          this.stopWecomPolling();
+          this.qrcodePayloads = { ...this.qrcodePayloads, wecom: null };
+          this.qrcodeError = "企微扫码失败，请重新获取二维码";
+          this.wecomStatusText = "扫码失败";
         }
       } catch (error) {
         // eslint-disable-next-line no-console
@@ -582,6 +587,7 @@ export default class DiscourseQrcodeLoginComponent extends Component {
   @action
   retryLoadQrcode() {
     this.qrcodeError = null;
+    this.wecomStatusText = "请使用企业微信扫描二维码";
     this.classinStatusText = "\u8bf7\u4f7f\u7528 ClassIn App \u626b\u63cf\u4e8c\u7ef4\u7801";
     this.loadQrcode(this.selectedQrcodeType, { forceRefresh: true });
   }

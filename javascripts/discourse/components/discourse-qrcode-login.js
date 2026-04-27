@@ -569,6 +569,7 @@ export default class DiscourseQrcodeLoginComponent extends Component {
   @action
   retryLoadQrcode() {
     this.qrcodeError = null;
+    this.classinStatusText = "\u8bf7\u4f7f\u7528 ClassIn App \u626b\u63cf\u4e8c\u7ef4\u7801";
     this.loadQrcode(this.selectedQrcodeType, { forceRefresh: true });
   }
 }

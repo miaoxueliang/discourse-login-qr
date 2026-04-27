@@ -140,6 +140,19 @@ export default class DiscourseQrcodeLoginComponent extends Component {
       return false;
     }
 
+    // 仅在笔记本/台式电脑上显示扫码登录：
+    //   pointer:fine  — 主输入设备为精确指针（鼠标/触控板），手机/iPad 为 coarse
+    //   hover:hover   — 支持悬停交互，触摸设备为 none
+    //   min-width     — 屏幕宽度兜底，排除极少数宽屏平板
+    const isDesktop =
+      window.matchMedia(
+        "(pointer: fine) and (hover: hover) and (min-width: 1025px)"
+      ).matches;
+
+    if (!isDesktop) {
+      return false;
+    }
+
     const { pathname } = window.location;
     return pathname === TARGET_PATH;
   }

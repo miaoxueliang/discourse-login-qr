@@ -522,6 +522,8 @@ export default class DiscourseQrcodeLoginComponent extends Component {
           this.stopClassInPolling();
           this.classinStatusText = "已扫码，正在登录...";
           window.location.href = payload.loginUrl;
+        } else if (status === "scanned") {
+          this.classinStatusText = "已扫码，请在 ClassIn App 中确认登录...";
         } else if (status === "expired") {
           this.stopClassInPolling();
           this.qrcodePayloads = { ...this.qrcodePayloads, classin: null };

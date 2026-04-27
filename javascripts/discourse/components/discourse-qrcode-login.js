@@ -7,6 +7,8 @@ const TARGET_PATH = "/login";
 const WECOM_POLL_INTERVAL = 2000;
 const WECOM_POLL_TIMEOUT = 5 * 60 * 1000;
 const WECOM_WIDGET_RENDER_TIMEOUT = 2500;
+const CLASSIN_POLL_INTERVAL = 2000;
+const CLASSIN_POLL_TIMEOUT = 5 * 60 * 1000;
 const DEFAULT_API_PATH_PREFIX = "/eeo";
 const WECOM_WIDGET_IMPL_VERSION = "2026-04-19.3";
 
@@ -118,6 +120,7 @@ export default class DiscourseQrcodeLoginComponent extends Component {
   @tracked qrcodePayloads = {};
   @tracked classinAvailable = false;
   @tracked wecomStatusText = "请使用企业微信扫描二维码";
+  @tracked classinStatusText = "请使用 ClassIn App 扫描二维码";
 
   qrcodeInstances = {};
   wecomPollTimer = null;
@@ -125,6 +128,8 @@ export default class DiscourseQrcodeLoginComponent extends Component {
   wecomWidgetFitTimer = null;
   wecomPollStartedAt = 0;
   wecomWidgetEnabled = true;
+  classinPollTimer = null;
+  classinPollStartedAt = 0;
 
   get useWecomOfficialWidget() {
     return !!settings.wecom_use_official_widget;
@@ -157,6 +162,7 @@ export default class DiscourseQrcodeLoginComponent extends Component {
     this.stopWecomPolling();
     this.clearWecomRenderFallbackTimer();
     this.clearWecomWidgetFitTimer();
+    this.stopClassInPolling();
     this.qrcodeInstances = {};
   }
 
@@ -205,7 +211,6 @@ export default class DiscourseQrcodeLoginComponent extends Component {
         ) {
           this.classinAvailable = true;
         }
-
         // Switch out of loading state first, then wait one frame so QR containers exist in DOM.
         this.isLoadingQrcode = false;
         await waitForContainerRender();
@@ -232,6 +237,12 @@ export default class DiscourseQrcodeLoginComponent extends Component {
     if (type === "wecom") {
       this.renderWecomQrcode(payload);
       this.startWecomPolling(payload);
+      return;
+    }
+
+    if (type === "classin") {
+      this.renderQrcode(type, payload?.url);
+      this.startClassInPolling(payload);
       return;
     }
 
@@ -481,6 +492,63 @@ export default class DiscourseQrcodeLoginComponent extends Component {
     }
   }
 
+  startClassInPolling(payload) {
+    if (!payload?.sessionId || !payload?.statusUrl || !payload?.loginUrl) {
+      // No polling config (e.g. placeholder URL) — skip silently
+      return;
+    }
+
+    this.stopClassInPolling();
+    this.classinPollStartedAt = Date.now();
+
+    const poll = async () => {
+      if (this.selectedQrcodeType !== "classin") {
+        return;
+      }
+
+      if (Date.now() - this.classinPollStartedAt >= CLASSIN_POLL_TIMEOUT) {
+        this.stopClassInPolling();
+        this.qrcodePayloads = { ...this.qrcodePayloads, classin: null };
+        this.qrcodeError = "二维码已过期，请重新生成";
+        this.classinStatusText = "二维码已过期";
+        return;
+      }
+
+      try {
+        const response = await fetchJson(payload.statusUrl);
+        const status = response?.data?.status || response?.status;
+
+        if (status === "confirmed") {
+          this.stopClassInPolling();
+          this.classinStatusText = "已扫码，正在登录...";
+          window.location.href = payload.loginUrl;
+        } else if (status === "expired") {
+          this.stopClassInPolling();
+          this.qrcodePayloads = { ...this.qrcodePayloads, classin: null };
+          this.qrcodeError = "二维码已过期，请重新生成";
+          this.classinStatusText = "二维码已过期";
+        } else if (status === "error") {
+          this.stopClassInPolling();
+          this.qrcodeError = "ClassIn 扫码授权失败，请重试";
+          this.classinStatusText = "授权失败";
+        }
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error("[ClassIn] poll status failed", error);
+      }
+    };
+
+    poll();
+    this.classinPollTimer = window.setInterval(poll, CLASSIN_POLL_INTERVAL);
+  }
+
+  stopClassInPolling() {
+    if (this.classinPollTimer) {
+      window.clearInterval(this.classinPollTimer);
+      this.classinPollTimer = null;
+    }
+  }
+
   @action
   async selectQrcodeType(type) {
     this.selectedQrcodeType = type;
@@ -488,6 +556,9 @@ export default class DiscourseQrcodeLoginComponent extends Component {
       this.stopWecomPolling();
       this.clearWecomRenderFallbackTimer();
       this.clearWecomWidgetFitTimer();
+    }
+    if (type !== "classin") {
+      this.stopClassInPolling();
     }
     await waitForContainerRender();
     await this.loadQrcode(type);

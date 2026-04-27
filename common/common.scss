@@ -3,8 +3,8 @@
  * 璁捐鍙傝€冿細ClassIn (eeo.cn/cn) + 浠婃棩澶存潯 / 鑵捐 / 闃块噷浜?鎵爜鐧诲綍浜や簰瑙勮寖
  *
  * 鑹插僵绯荤粺
- *   WeCom 钃?  #1677FF  鈥?浼佷笟寰俊鍝佺墝鑹?
- *   ClassIn 姗?#FF6635  鈥?ClassIn / EEO 鍝佺墝鑹?
+ *   WeCom 钃?  #0082ef  鈥?浼佷笟寰俊鍝佺墝鑹?
+ *   ClassIn 姗?#1a1a2e  鈥?ClassIn / EEO 鍝佺墝鑹?
  *   鏂囧瓧涓昏壊   #1D2129  鈥?Arco Design dark
  *   鏂囧瓧娆¤壊   #86909C  鈥?Arco Design secondary
  *   杈规       #E8EDF4
@@ -112,21 +112,21 @@
 
   // 浼佷笟寰俊 Tab 婵€娲昏壊锛歐eCom 钃?
   &[data-type="wecom"].active::after {
-    background: #1677ff;
+    background: #0082ef;
   }
 
   // ClassIn Tab 婵€娲昏壊锛欳lassIn 姗?
   &[data-type="classin"].active::after {
-    background: #ff6635;
+    background: #1a1a2e;
   }
 
   // 激活 tab 文字颜色使用品牌色（覆盖通用 #1d2129）
   &[data-type="wecom"].active {
-    color: #1677ff;
+    color: #0082ef;
   }
 
   &[data-type="classin"].active {
-    color: #ff6635;
+    color: #1a1a2e;
   }
 }
 
@@ -145,11 +145,11 @@
   letter-spacing: -0.2px;
 
   &--wecom {
-    background: #1677ff;
+    background: #0082ef;
   }
 
   &--classin {
-    background: #ff6635;
+    background: #1a1a2e;
   }
 }
 
@@ -177,7 +177,7 @@
     width: 26px;
     height: 26px;
     border: 2.5px solid #e5e9f0;
-    border-top-color: #1677ff;
+    border-top-color: #0082ef;
     border-radius: 50%;
     animation: qrcode-spin 0.7s linear infinite;
   }
@@ -229,7 +229,7 @@
   .qrcode-retry-btn {
     margin-top: 6px;
     padding: 8px 26px;
-    background: #1677ff;
+    background: #0082ef;
     color: #ffffff;
     border: none;
     border-radius: 6px;
@@ -251,11 +251,11 @@
 
 // 品牌色按钮：根据当前激活 Tab 切换
 .qrcode-login-section[data-active-type="wecom"] .qrcode-retry-btn {
-  background: #1677ff;
+  background: #0082ef;
 }
 
 .qrcode-login-section[data-active-type="classin"] .qrcode-retry-btn {
-  background: #ff6635;
+  background: #1a1a2e;
 }
 
 // 鈹€鈹€鈹€ 浜岀淮鐮佸尯鍩?鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
@@ -324,11 +324,11 @@
 }
 
 .qrcode-login-section[data-active-type="wecom"] .qrcode-status-text--active {
-  color: #1677ff;
+  color: #0082ef;
 }
 
 .qrcode-login-section[data-active-type="classin"] .qrcode-status-text--active {
-  color: #ff6635;
+  color: #1a1a2e;
 }
 
 // 鎸囧紩璇存槑琛岋紙鎵嬫満鍥炬爣 + 闈欐€佸紩瀵兼枃瀛楋級

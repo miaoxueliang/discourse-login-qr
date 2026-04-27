@@ -49,10 +49,7 @@
   background: #ffffff;
   border: 1px solid #e8edf4;
   border-radius: 12px;
-  // overflow:hidden 浼氬湪 transform:scale 鏃惰鍒?layout box 瓒呭嚭閮ㄥ垎
-  // 鏀圭敤 clip-path 淇濅綇鍦嗚瑙嗚锛屽悓鏃朵笉鍙備笌 overflow 瑁佸垏
-  overflow: visible;
-  clip-path: inset(0 round 12px);
+  overflow: hidden;
   box-shadow:
     0 2px 8px rgba(0, 0, 0, 0.06),
     0 1px 2px rgba(0, 0, 0, 0.04);
@@ -232,10 +229,8 @@
 .qrcode-box {
   display: flex;
   justify-content: center;
-  align-items: flex-start;
+  align-items: center;
   flex-direction: column;
-  // JS 鎶?iframe 鐨?width/height 鐩存帴缂╁皬鍒板鍣ㄥ疄闄呭搴?
-  // layout box 灏辨槸缂╁皬鍚庣殑灏哄锛宱verflow:hidden 涓嶄細瑁佸垏
   overflow: hidden;
   background: #ffffff;
   border: 1.5px solid #e8edf4;
@@ -243,16 +238,22 @@
   padding: 8px;
   width: 100%;
   box-sizing: border-box;
-  // 楂樺害鐢?iframe 鍐呭鑷姩鎷変几
   min-height: 0;
 
+  // JS creates .wecom-scale-wrapper when scale < 1.
+  // wrapper width/height = scaled size (layout footprint).
+  // iframe stays at native 300x360; transform scales visually.
+  // wrapper overflow:hidden clips the transform overhang.
+  .wecom-scale-wrapper {
+    overflow: hidden;
+    position: relative;
+    margin: 0 auto;
+    flex-shrink: 0;
+  }
+
   iframe {
-    // 瀹藉害/楂樺害鐢?JS 鐩存帴璁剧疆 px 鍊硷紝涓嶇敤 transform
     border: 0;
     display: block;
-    margin: 0 auto;
-    // 闄愬埗鏈€澶у搴︿笉瓒呰繃瀹瑰櫒
-    max-width: 100%;
   }
 
   canvas,
@@ -333,7 +334,6 @@
     max-width: 100%;
     border-radius: 10px;
     box-shadow: none;
-    clip-path: inset(0 round 10px);
   }
 
   .qrcode-tab {

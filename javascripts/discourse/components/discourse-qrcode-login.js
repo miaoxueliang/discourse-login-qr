@@ -368,30 +368,64 @@ export default class DiscourseQrcodeLoginComponent extends Component {
         return;
       }
 
-      // 企微官方 widget 原始尺寸
+      // Enterprise WeChat official widget native dimensions
       const WIDGET_W = 300;
       const WIDGET_H = 360;
 
-      // 容器可用宽度（减去 padding 8px * 2 = 16px）
-      const availableWidth = Math.max((container.clientWidth || 308) - 16, 200);
-
-      // 等比缩放：如果容器比 widget 窄就缩小，否则保持原始尺寸（最大 1.0 倍）
-      const scale = Math.min(1.0, availableWidth / WIDGET_W);
+      // Inner width of .qrcode-box (clientWidth includes padding 8px*2=16px)
+      const innerWidth = (container.clientWidth || WIDGET_W + 16) - 16;
+      // Only scale down when the container is narrower than the widget.
+      // Never scale up (max 1.0). Use floor to stay within bounds.
+      const scale = innerWidth >= WIDGET_W ? 1.0 : Math.floor((innerWidth / WIDGET_W) * 1000) / 1000;
       const fitW = Math.floor(WIDGET_W * scale);
       const fitH = Math.floor(WIDGET_H * scale);
 
-      // 直接设置 iframe 的 width/height，让 layout box 就是缩放后的尺寸
-      // 避免 transform:scale 导致 layout box 仍为原始尺寸而被 overflow:hidden 裁切
-      iframe.style.width = `${fitW}px`;
-      iframe.style.height = `${fitH}px`;
+      // IMPORTANT: always keep the iframe at its NATIVE 300×360.
+      // Setting iframe width/height smaller than native just shrinks the
+      // iframe's own viewport, which CROPS the widget content — it does NOT
+      // scale it. The correct approach is:
+      //   1. iframe stays at 300×360 (full widget renders correctly)
+      //   2. transform:scale() visually shrinks it
+      //   3. A wrapper div with width=fitW / height=fitH + overflow:hidden
+      //      clips the transform overhang and provides the correct layout footprint
+      iframe.style.width = `${WIDGET_W}px`;
+      iframe.style.height = `${WIDGET_H}px`;
       iframe.style.maxWidth = "none";
-      iframe.style.transform = "none";
-      iframe.style.margin = "0 auto";
+      iframe.style.border = "0";
       iframe.style.display = "block";
 
-      // 容器高度跟随 iframe 实际高度
+      if (scale < 1.0) {
+        // Move iframe into a clip-wrapper that has the scaled layout footprint
+        let wrapper = container.querySelector(".wecom-scale-wrapper");
+        if (!wrapper) {
+          wrapper = document.createElement("div");
+          wrapper.className = "wecom-scale-wrapper";
+          // insertBefore moves the iframe node into the wrapper
+          container.insertBefore(wrapper, iframe);
+          wrapper.appendChild(iframe);
+        }
+        wrapper.style.width = `${fitW}px`;
+        wrapper.style.height = `${fitH}px`;
+        wrapper.style.overflow = "hidden";
+        wrapper.style.position = "relative";
+        wrapper.style.margin = "0 auto";
+
+        // scale from top-left so the wrapper clips the bottom/right correctly
+        iframe.style.transform = `scale(${scale})`;
+        iframe.style.transformOrigin = "top left";
+        iframe.style.position = "absolute";
+        iframe.style.top = "0";
+        iframe.style.left = "0";
+      } else {
+        // No scaling needed — container is wide enough for the full widget
+        iframe.style.transform = "none";
+        iframe.style.position = "static";
+        iframe.style.margin = "0 auto";
+      }
+
+      // Let container height be driven by the wrapper/iframe natural height
       container.style.minHeight = `${fitH}px`;
-    }, 180);
+    }, 200);
   }
 
   startWecomPolling(payload) {

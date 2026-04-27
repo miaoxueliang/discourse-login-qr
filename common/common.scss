@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Discourse 浜岀淮鐮佹壂鐮佺櫥褰曠粍浠舵牱寮?鈥?v2
  * 璁捐鍙傝€冿細ClassIn (eeo.cn/cn) + 浠婃棩澶存潯 / 鑵捐 / 闃块噷浜?鎵爜鐧诲綍浜や簰瑙勮寖
  *
@@ -118,6 +118,15 @@
   // ClassIn Tab 婵€娲昏壊锛欳lassIn 姗?
   &[data-type="classin"].active::after {
     background: #ff6635;
+  }
+
+  // 激活 tab 文字颜色使用品牌色（覆盖通用 #1d2129）
+  &[data-type="wecom"].active {
+    color: #1677ff;
+  }
+
+  &[data-type="classin"].active {
+    color: #ff6635;
   }
 }
 
